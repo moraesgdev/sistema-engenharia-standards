@@ -1,0 +1,2277 @@
+<!DOCTYPE html><html lang="pt-BR" data-ready="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>STMA · Desenvolvimento · TI-ENG-001-NOR</title>
+
+<style>
+
+:root{
+  --paper:#FDFCFA; --sheet:#FFFFFF; --sheet2:#F5F5F3;
+  --ink:#050505; --graphite:#5E646E; --pencil:#8B919A;
+  --rule:#EBEBE8; --rule-strong:#D6D6D2;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:#E8E6E1; color:var(--ink);
+  font-family:"Inter",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased; -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.doc{display:flex;flex-direction:column;align-items:center;gap:18px;padding:26px 14px}
+
+/* A folha é a unidade: 210 × 297 mm, com margem interna de prancha. */
+.page{
+  position:relative; width:210mm; min-height:297mm; background:var(--paper);
+  box-shadow:0 1px 2px rgba(0,0,0,.10),0 12px 30px rgba(0,0,0,.13);
+  overflow:hidden; page-break-after:always; break-after:page;
+}
+.page:last-child{page-break-after:auto;break-after:auto}
+.inner{position:absolute;left:14mm;right:14mm;top:14mm;bottom:24mm;display:flex;flex-direction:column}
+.thread{position:absolute;left:0;top:0;bottom:0;width:3.5mm;background:var(--th,var(--ink))}
+
+/* Carimbo — bloco de identificação da prancha técnica. */
+.carimbo{
+  position:absolute;left:0;right:0;bottom:0;height:18mm;
+  border-top:.4mm solid var(--rule-strong);background:var(--sheet2);
+  display:grid;grid-template-columns:1.7fr 1.1fr 1fr .7fr;
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+}
+.carimbo>div{padding:0 4mm;border-left:.3mm solid var(--rule);
+  display:flex;flex-direction:column;justify-content:center;gap:1mm;min-width:0}
+.carimbo>div:first-child{border-left:0}
+.cl{font-size:6.5pt;letter-spacing:.12em;text-transform:uppercase;color:var(--pencil)}
+.cv{font-size:8.5pt;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-variant-numeric:tabular-nums}
+
+/* Tipografia da folha */
+.p-eyebrow{font-family:"JetBrains Mono",monospace;font-size:7pt;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--th,var(--graphite));margin:0 0 4mm}
+.p-title{font-family:"Instrument Sans",system-ui,sans-serif;font-weight:700;
+  font-size:24pt;line-height:1.06;letter-spacing:-.02em;margin:0 0 4mm;text-wrap:balance}
+.p-sub{font-size:10pt;line-height:1.5;color:var(--graphite);margin:0 0 5mm;max-width:52ch}
+.hr{height:.3mm;background:var(--rule);margin:5mm 0;flex:none}
+.gap{height:6mm}
+.vazio{font-size:9.5pt;color:var(--pencil);font-style:italic;margin:0}
+.nota{font-size:10pt;line-height:1.55;margin:0;max-width:56ch}
+.nota.parecer{border-left:.8mm solid var(--rule-strong);padding-left:4mm}
+
+/* Capa */
+.capa{--th:var(--ink)}
+.capa .inner{bottom:14mm}
+.cover-mark{display:flex;align-items:center;gap:4mm;margin-bottom:auto}
+.logo{width:13mm;height:13mm;filter:invert(1);flex:none}
+.mark-txt{font-family:"Instrument Sans",sans-serif;font-weight:600;font-size:11pt}
+.mark-txt span{display:block;font-family:"JetBrains Mono",monospace;font-weight:400;
+  font-size:7pt;letter-spacing:.16em;color:var(--pencil);text-transform:uppercase;margin-top:1mm}
+.threads{display:flex;gap:1.6mm;margin-bottom:7mm}
+.threads i{height:2mm;flex:1;border-radius:99px;display:block}
+.capa h1{font-family:"Instrument Sans",sans-serif;font-weight:700;font-size:38pt;
+  line-height:.98;letter-spacing:-.035em;margin:0 0 5mm;text-wrap:balance}
+.capa .obra{font-size:13pt;line-height:1.4;color:var(--graphite);margin:0 0 10mm;max-width:34ch}
+.cover-grid{display:grid;grid-template-columns:1fr 1fr;gap:7mm 8mm;margin-top:auto}
+.cg-l{font-family:"JetBrains Mono",monospace;font-size:7pt;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--pencil);margin-bottom:1.5mm}
+.cg-v{font-size:11pt;line-height:1.35;font-weight:500}
+
+/* Ficha e equipe */
+.ficha{display:grid;grid-template-columns:1fr 1fr;border:.3mm solid var(--rule);flex:none}
+.ficha div{padding:4mm;border-bottom:.3mm solid var(--rule);border-right:.3mm solid var(--rule);min-width:0}
+.ficha div:nth-child(2n){border-right:0}
+.f-l{font-family:"JetBrains Mono",monospace;font-size:6.5pt;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--pencil);display:block;margin-bottom:1.5mm}
+.f-v{font-size:10.5pt;font-weight:500;line-height:1.3}
+.equipe{display:flex;flex-direction:column;gap:3.5mm}
+.pessoa{display:flex;align-items:center;gap:4mm}
+.av{width:11mm;height:11mm;border-radius:99px;display:flex;align-items:center;justify-content:center;
+  font-family:"Instrument Sans",sans-serif;font-weight:600;font-size:10pt;color:#fff;flex:none}
+.pn{font-size:10.5pt;font-weight:600;line-height:1.25}
+.pf{font-family:"JetBrains Mono",monospace;font-size:7.5pt;color:var(--graphite);margin-top:.8mm}
+
+/* Fotos */
+.fotos{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+.foto{border:.3mm solid var(--rule);background:var(--sheet);margin:0;
+  break-inside:avoid;page-break-inside:avoid}
+.shot{position:relative;aspect-ratio:4/3;background:var(--sheet2);
+  border-bottom:.3mm solid var(--rule);overflow:hidden}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot .n{position:absolute;left:2.5mm;top:2.5mm;width:7mm;height:7mm;border-radius:99px;
+  background:var(--th,var(--ink));color:#fff;display:flex;align-items:center;justify-content:center;
+  font-family:"JetBrains Mono",monospace;font-size:7.5pt;font-weight:700;z-index:1}
+.semfoto{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:"JetBrains Mono",monospace;font-size:7pt;color:var(--pencil)}
+.fcap{padding:3.5mm}
+.ftit{font-size:9.5pt;font-weight:600;line-height:1.3;margin:0 0 1.5mm}
+.fdesc{font-size:9pt;line-height:1.45;margin:0 0 2.5mm}
+.fck{list-style:none;margin:0 0 2.5mm;padding:0;display:flex;flex-direction:column;gap:1mm}
+.fck li{font-size:8pt;line-height:1.35;color:var(--graphite)}
+.fck li.ok{color:var(--ink)}
+.fmeta{display:flex;flex-wrap:wrap;gap:1mm 3mm;font-family:"JetBrains Mono",monospace;
+  font-size:7pt;color:var(--graphite);font-variant-numeric:tabular-nums}
+.fmeta b{font-weight:500;color:var(--ink)}
+.tag{padding:.6mm 2mm;border-radius:99px;background:var(--sheet2);color:var(--graphite)}
+
+/* Checklist */
+.ck{display:flex;flex-direction:column;border-top:.3mm solid var(--rule)}
+.ck-row{display:grid;grid-template-columns:7mm 1fr auto;gap:3.5mm;padding:3.5mm 0;
+  border-bottom:.3mm solid var(--rule);align-items:start;break-inside:avoid;page-break-inside:avoid}
+.tick{width:7mm;height:7mm;border-radius:50%;background:var(--th,var(--ink));color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:9pt;line-height:1}
+.tick.vazio{background:transparent;border:.4mm solid var(--rule-strong);color:var(--pencil)}
+.ck-t{font-size:10pt;line-height:1.4;font-weight:500}
+.ck-o{font-size:9pt;line-height:1.45;color:var(--graphite);margin-top:1.5mm;
+  padding-left:3mm;border-left:.5mm solid var(--rule-strong)}
+.ck-fotos{display:flex;gap:2mm;margin-top:2.5mm}
+.ck-fotos img{width:22mm;height:17mm;object-fit:cover;border:.3mm solid var(--rule)}
+.ck-w{font-family:"JetBrains Mono",monospace;font-size:7pt;color:var(--graphite);
+  text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.5}
+
+/* Planta */
+.planta{position:relative;border:.3mm solid var(--rule);background:var(--sheet);
+  width:100%;aspect-ratio:4/3;overflow:hidden}
+.planta img{width:100%;height:100%;object-fit:contain;display:block}
+.pin{position:absolute;width:8mm;height:8mm;border-radius:99px;color:#fff;
+  display:flex;align-items:center;justify-content:center;font-family:"JetBrains Mono",monospace;
+  font-size:8pt;font-weight:700;transform:translate(-50%,-50%);
+  box-shadow:0 .3mm 1mm rgba(0,0,0,.35)}
+.legenda{display:grid;grid-template-columns:1fr 1fr;gap:2mm 6mm;margin-top:5mm}
+.lg{display:flex;gap:3mm;align-items:baseline;font-size:9pt;line-height:1.35}
+.lg i{font-family:"JetBrains Mono",monospace;font-size:8pt;font-weight:700;
+  color:var(--th);font-style:normal;flex:none}
+
+/* Encerramento */
+.assina{display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:auto}
+.sig{border-top:.4mm solid var(--ink);padding-top:3mm}
+.sig b{display:block;font-size:10.5pt;font-weight:600}
+.sig span{font-family:"JetBrains Mono",monospace;font-size:7.5pt;color:var(--graphite)}
+
+@media print{
+  @page{size:A4 portrait;margin:0}
+  body{background:#fff}
+  .doc{gap:0;padding:0}
+  .page{box-shadow:none;margin:0;width:210mm;height:297mm;min-height:0}
+}
+
+
+
+/* STMA · complemento de apresentação documental, preservando os tokens e componentes da norma */
+body {overflow-x:hidden}
+.page {height:297mm;min-height:297mm;}
+.page .inner{min-height:0}
+.content-page .inner{top:14mm;bottom:23mm;}
+.document-head{flex:none;padding-bottom:4mm;margin-bottom:4mm;border-bottom:.3mm solid var(--rule-strong)}
+.document-head .doc-kicker{font-family:'JetBrains Mono',monospace;font-size:7pt;color:var(--th);letter-spacing:.13em;text-transform:uppercase;margin-bottom:2mm}
+.document-head .doc-name{font-family:'Instrument Sans',sans-serif;font-size:19pt;font-weight:700;line-height:1.1;letter-spacing:-.025em;margin-bottom:2mm}
+.document-head .doc-description{font-size:8.5pt;color:var(--graphite);margin:0;line-height:1.4}
+.page-body{flex:1;min-height:0;overflow:hidden;font-size:9.0pt;line-height:1.47;color:#23262b}
+.page-body h2{font-family:'Instrument Sans',sans-serif;font-size:15.5pt;line-height:1.16;letter-spacing:-.017em;font-weight:700;margin:4mm 0 3mm;padding-bottom:2mm;border-bottom:.3mm solid var(--rule-strong);color:var(--ink)}
+.page-body h3{font-family:'Instrument Sans',sans-serif;font-size:11.5pt;font-weight:700;line-height:1.3;margin:3.2mm 0 2mm;color:var(--ink)}
+.page-body h4{font-family:'Instrument Sans',sans-serif;font-size:10pt;font-weight:650;margin:2.8mm 0 1.6mm;color:var(--ink)}
+.page-body h5{font-family:'Instrument Sans',sans-serif;font-size:9.5pt;font-weight:600;margin:2.5mm 0 1.4mm;color:var(--ink)}
+.page-body p{margin:0 0 2.5mm;line-height:1.48;overflow-wrap:anywhere}
+.page-body strong{font-weight:650;color:var(--ink)}
+.page-body a{color:#56409c;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
+.page-body blockquote{border-left:.85mm solid var(--th);background:var(--sheet2);padding:3.0mm 3.4mm;margin:1.5mm 0 3.2mm;color:#454a52}
+.page-body blockquote p{font-size:8.65pt;margin:0 0 1mm}
+.page-body blockquote p:last-child{margin-bottom:0}
+.page-body hr{border:0;border-top:.3mm solid var(--rule-strong);margin:3mm 0}
+.page-body .md-list{padding-left:5mm;margin:0 0 1.7mm;}
+.page-body .md-list li{padding-left:.7mm;margin:0;font-size:8.75pt;line-height:1.42}
+.page-body .md-list li p{margin:0}
+.page-body .md-list li ul,.page-body .md-list li ol{margin:1mm 0}
+.page-body .md-list ul{list-style:circle}
+.page-body .md-list ol{list-style:decimal}
+.page-body .data-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:0 0 1.8mm;background:white;max-width:100%;}
+.page-body .data-table th,.page-body .data-table td{border:.28mm solid var(--rule-strong);text-align:left;vertical-align:top;padding:2mm 2.3mm;font-size:7.6pt;line-height:1.34;overflow-wrap:anywhere;word-break:normal}
+.page-body .data-table th{background:var(--sheet2);font-family:'Inter',sans-serif;font-size:7.2pt;font-weight:700;color:#414650}
+.page-body .data-table td code{font-size:7.2pt}
+.page-body .data-table p{margin:0 0 1mm;font-size:7.5pt;line-height:1.35}
+.page-body .data-table p:last-child{margin-bottom:0}
+.page-body .data-table ul{margin:0;padding-left:4mm}
+.page-body code:not(pre code){background:#F0F0EE;padding:.22mm .95mm;border-radius:1mm;font-family:'JetBrains Mono',monospace;font-size:.9em;overflow-wrap:anywhere}
+.page-body .code-wrap{margin:0 0 3mm;border:.3mm solid var(--rule-strong);background:#F5F5F3;}
+.page-body .code-head{border-bottom:.3mm solid var(--rule-strong);padding:1.8mm 3mm;font:7pt 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--graphite);display:flex;justify-content:space-between}
+.page-body pre{margin:0;padding:3mm;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;tab-size:2;font-family:'JetBrains Mono',monospace;font-size:7.2pt;line-height:1.42;color:#20242a}
+.page-body pre code{font:inherit;background:transparent;padding:0}
+.page-body .mermaid-hint{padding:1.8mm 3mm;font-size:7pt;color:var(--graphite);border-top:.3mm solid var(--rule)}
+.page-body .section-index{font:7pt 'JetBrains Mono',monospace;color:var(--th);letter-spacing:.04em}
+.page-body .unit{margin:0;padding:0;break-inside:avoid;}
+.page-body .unit ul, .page-body .unit ol{margin-top:0;}
+.page-body .unit.last-list{margin-bottom:2mm}
+.page-body .unit.table-start table{margin-top:1mm}
+.page-body .unit.is-table:not(.table-start) table thead{display:none}
+.page-body .unit.is-table:not(.table-start) table{margin-top:-1.8mm}
+.page-body .unit.is-table:not(.table-start) table td{border-top:0}
+.cover-category{font-family:'JetBrains Mono',monospace;font-size:7pt;letter-spacing:.16em;color:var(--graphite);text-transform:uppercase;margin:0 0 2mm}
+.capa .cover-subtitle{color:#535b65;font-size:12.2pt;line-height:1.42;margin:0 0 6mm;max-width:42ch}
+.capa h1{font-size:37pt}
+.capa .cover-note{border-left:.8mm solid var(--rule-strong);padding-left:3mm;margin:0 0 7mm;font-size:9pt;line-height:1.45;color:#626873;max-width:46ch}
+.capa .cover-grid{margin-top:0}
+.capa .cover-mid{margin-top:auto;margin-bottom:auto;}
+.doc-ribbon{position:absolute;right:14mm;top:14mm;font-family:'JetBrains Mono',monospace;font-size:6.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--graphite)}
+.preview-nav{position:fixed;top:18px;right:22px;display:flex;gap:8px;z-index:30}
+.preview-nav button{font:12px Inter,sans-serif;background:#17191d;color:white;padding:10px 14px;border:0;border-radius:6px;cursor:pointer;box-shadow:0 2px 14px #0002}
+.preview-nav button.secondary{background:white;color:#111;border:1px solid #ddd}
+@media print{.preview-nav{display:none!important} .page{height:297mm;min-height:297mm;} }
+@media screen and (max-width:850px){.doc{align-items:flex-start;overflow:auto}.preview-nav{right:8px;top:8px}}
+</style><style id="stma-pages-navigation">
+.stma-pages-nav{position:fixed;top:16px;right:16px;z-index:9999;padding:10px 15px;
+background:#050505;color:#fff;font:600 12px/1.2 system-ui,sans-serif;text-decoration:none;
+border-radius:7px;box-shadow:0 3px 13px #0002;transition:opacity .2s}
+.stma-pages-nav:hover{opacity:.84}
+@media print{.stma-pages-nav{display:none!important}}
+@media(max-width:840px){.stma-pages-nav{top:8px;right:8px;padding:8px 10px;font-size:11px}}
+</style></head><body>
+<a class="stma-pages-nav" href="index.html" aria-label="Voltar à biblioteca STMA">← Biblioteca STMA</a>
+<div class="doc"><section class="page capa" style="--th:#E06C00"><div class="inner">
+      <div class="cover-mark"><img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAQACAYAAAB/HSuDAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAACAASURBVHic7N1rlNXVfTfwfWaGywAjoAJyMYANUVO8oti1Wi9NTROTVq1NWl01Wa4mxmqW4qXWxGBLbURrvdVqTDVpVhOtWmutxmrULhOz0kYNRryQWNJ4AQXUCnIZLgPMeV48Pj4qIMNwzvz2/+zP513y6vvCNZz9Pd+9Ty2lVE8AAABAS2uLDgAAAAA0nwIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAJ0RAcAAOD/u/LKK9PG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AABQCJN/gMZ6+eWX03777ZfefPPN6CjQJwoAWkJXV1d0BIAs1ev1tGDBgrTLLrukUaNGRccBqLyNGzemzZs3pzFjxqQ1a9ZEx4EdogCgstra2tKpp56a/uzP/izttdde0XEAeI/e3t7oCAANc/bZZ6d77703rVq1Kr3xxhvRcaBfFABU0uOPP54OPfTQ6BgAbMVv//Zvp9WrV6dHH300OgoA8A4eAaRSvv71r6d6ve7wD5ChE044IdVqtfTQQw85/ANAhiwAqITOzs60du3a6BgAvMeDDz6YHnjggXTVVVdFRwEAtsMCgOydd955Dv8AmbnzzjvTAQcckD72sY85/ANARVgAkLVrrrkmzZo1KzoGAO8wZsyY9L//+7/RMQCAHaQAIFvXXnttOvPMM6NjAPCW3t7eNHLkSD97BQAVVUsp1aNDwHsNHz7cB0yAzAwbNiytW7cuOgYA0E/eACBLDv8AeXn88ccd/gGg4hQAZOe6666LjgDAexx22GHREQCAneQKANlZvXp1GjFiRHQMAN4yefLktGjRougYAMBOsgAgOw7/APn4z//8T4d/AGgRCgCy8uMf/zg6AgBv+f73v59+4zd+IzoGANAgCgCy0tPTEx0BgLcO/x/5yEeiYwAADeQNALKycOHCNG3atOgYAMWr1WrREQCABrMAICsO/wDxDj744OgIAEATWACQlXrdf44AkV588cU0derU6BgAQBNYAAAAbzv22GOjIwAATWIBQFYsAADirFmzJnV1dUXHAACaxAIAAEirV69OI0eOjI4BADSRAgAACrd06dK0yy67pN7e3ugoAEATKQAAoHBnnHFGdAQAYAB4A4CseAMAYGAtXrw4TZ482d9fACiABQAAFOyaa65x+AeAQlgAkBUfQgEGzp133pk+9alPRccAAAaIAoCsKAAABk6tVouOAAAMIFcAAKBAc+bMiY4AAAywjugAAMDAOv/889MVV1wRHQMAGGCuAJAVVwAAms/0HwDK5AoAABSkq6srOgIAEEQBAACFmD17dlqzZk10DAAgiCsAZMUVAIDmqNfrafz48enVV1+NjgIABLEAAIACfOtb33L4B4DCWQCQFQsAgMa77bbb0kknnRQdAwAIpgAgKwoAgMa6++670/HHHx8dAwDIgAKArCgAABpn/vz56aCDDoqOAQBkQgFAVhQAAI0zZMiQ1NPT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vsM/0GcdHR3ppptuio4B72IBQFYsAIBmuuaaa9I555wTHYOK+cUvfpE++MEPRscAKmjlypVp1KhR0THgbQoAsqIAAJppr732Si+88EJ0DCrk5z//edpnn32iYwAV5jFAcuIKAAAt78Ybb0yTJk1y+KfPPvWpT6V6ve7wD0BLsQAgKxYAQKPdcsst6eSTT46OQYX8zu/8Tvrud78bHQNoERYA5EQBQFYUAEAj9fb2pt122y29+eab0VGoiI6OjrRx48boGEALUQCQk47oAADQDBs3bkzDhw93mGOHLFmyJDoCADSNAgCAltPT05Mef/xxh392yD777JPGjBkTHQMAmsYVALLiCgCws3p7e1NXV1dau3ZtdBQqZPr06enpp5821QUazt8VcuJXAABoGTfddFNqb293+GeHHHrooemZZ57xIR2AlqcAAKAlXHfddekLX/hCdAwq5ogjjkiPP/54dAwAGBCuAJAVVwCA/vjsZz+bvvOd70THoIL8uwM0m3URObEAICs/+MEPoiMAFfI3f/M3afTo0Q7/9MuXv/zl6AgAMKD8CgBZGTp0aHQEoAJuvPHGdNppp0XHoMIOOeSQNHfu3OgYADCgXAEgO+aYwLasWLEi7brrrtExaAH+rQEGiisA5MQVALJz2223RUcAMnT22Wc7/NMQ//Vf/xUdAQBCWACQJd/MAP/PG2+8kS688MJ04403RkehBTz55JPpwAMPjI4BFMQCgJxYAJClK664IjoCEGzt2rXp6KOPTuPHj3f4pyFGjhzp8A9A0TwCSJbOP//81N3dnf7iL/4iOgowgOr1elq6dGk6/PDD06JFi9KmTZuiI9Eidtlll7R8+fLoGAAQSgFAtubMmZN6enrSJZdcEh0FGACHHnpomjdvXnQMWtTdd9+d2toMHwEom38JydrcuXPT7Nmzo2MATXTHHXekAw880OGfppk4cWI66qijomMAQDiPAFIJF198cbrooouiYwANdu6556arr746OgYtbNy4cWnZsmXRMYCCeQSQnCgAqIy5c+emc889Nw0ZMiQ6CrCDli1blm699da3//df/uVfppUrV4Zmogx+VQaIpgAgJwoAKmfu3Lnpc5/7XBo7dmx0FGAb7rjjjjR06NB07LHHRkehYNdee20688wzo2MAhVMAkBMFAJV11llnpb/927+NjgGklH784x+nlFL6xCc+kd58883oOJDOPvts10uALCgAyIkCgMp7+eWXU61WSxMmTIiOAsX45S9/mWq1WrrvvvvSWWedZWZNdvw3CeRCAUBO/AwglTdp0qTU3t6eOjs7o6NAMdasWRMdAbZp7ty50REAIEsWAABAS+np6UmDBg2KjgGQkgUAmWmLDgAA0Chz5851+AeAbXAFAABoCZdddlm64IILomMAQLYsAACACotzMAAAGSJJREFUyvurv/orh38A2A5vAAAAlTZ48OC0dOnStOuuu0ZHAdiCNwDIiQUAAFBpJ554osM/APSBBQAAUGnLly9Po0ePjo4BsFUWAOTEAgAAqKyOjo7U3t4eHQMAKkEBAABU1rhx49Iuu+wSHQMAKsEVAACgspYuXZr22GOP6BgA2+QKADmxAAAAKunFF190+AeAHaAAAAAq5+c//3maPHlydAwAqBQFAABQKfPnz0/77LNPdAwAqBwFAABQGV/96lfTAQccEB0DACrJI4AAQCX8+q//evrRj34UHQNgh3gEkJxYAAAAlfDVr341OgIAVFpHdAAAgO154okn0sEHHxwdAwAqTQEAAGSrVqulBQsWpH333Tc6CgBUnjcAAIBs7brrrumNN96IjgHQb94AICfeAAAAsrTbbrul119/PToGALQMBQAAkKW77747tbX5qAIAjeIKAACQnd133z0tW7Ystbe3R0cB2CmuAJATBQAAkJ163ccToDUoAMiJXR0AkJUjjjgiOgIAtCQLAAAgGxMmTEivvPJKdAyAhrEAICcWAABANk4//fToCADQsiwAAIAsfPnLX05z586NjgHQUBYA5EQBAABkwcN/QCtSAJATVwAAgHCXXXZZdAQAaHkWAABAON/+A63KAoCcWAAAAKHefPPN6AgAUAQFAAAQor29Pa1evTqNHDkyOgoAFEEBAACE+OIXv5hGjBgRHQMAiuENAABgwH3uc59L3/jGN6JjADSdNwDIiQIAABhQQ4cOTcuXL0+dnZ3RUQCaTgFATlwBAAAG1OGHH+7wDwABLAAAgAHT1taWNm3a5BsxoBj+3pETCwAAYMAcfvjhPgwDQBALAABgwNTrPnYAZVF6khMLAABgQCxcuDA6AgAUTQEAADTds88+m6ZNmxYdAwCKpgAAAJrq6quvTr/6q78aHQMAiucNAACgqdz7B0rmDQByYgEAADTNv/7rv0ZH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AAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQIC/AIlqE/aAKuqpAAAAAElFTkSuQmCC" alt="Marca Sistema Engenharia"><div class="mark-txt">Sistema Engenharia<span>STMA · Tecnologia e Automação</span></div></div>
+      <div class="cover-mid"><div class="threads"><i style="background:#1A994C"></i><i style="background:#D63C30"></i><i style="background:#E06C00"></i><i style="background:#6B4FC8"></i></div><p class="cover-category">STMA · Engenharia, automação &amp; software</p>
+      <p class="p-eyebrow">Desenvolvimento / Operação · Documento-modelo</p>
+      <h1>Documentação de<br>desenvolvimento</h1><p class="cover-subtitle">Stack · Arquitetura · Git · Operação · Entregas</p>
+      <p class="cover-note">Documento padronizado para apresentações e registros internos. Os campos de exemplo devem ser preenchidos e revisados antes de qualquer aprovação ou divulgação.</p>
+      <div class="cover-grid">
+      <div><div class="cg-l">Norma de referência</div><div class="cg-v">TI-ENG-001-NOR</div></div>
+      <div><div class="cg-l">Identificador do modelo</div><div class="cg-v">STMA-DEVELOPMENT</div></div>
+      <div><div class="cg-l">Versão do kit</div><div class="cg-v">0.1 · Beta</div></div>
+      <div><div class="cg-l">Emissão</div><div class="cg-v">14 outubro 2026</div></div>
+      <div><div class="cg-l">Aplicação</div><div class="cg-v">Projetos STMA</div></div>
+      <div><div class="cg-l">Aprovação da norma</div><div class="cg-v">Pendente · liderança</div></div>
+      </div></div>
+      </div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 01</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><blockquote>
+<p><strong>MODELO MESTRE · BETA 0.1</strong><br>
+<strong>Norma de referência:</strong> <code>TI-ENG-001-NOR</code> — Engenharia, Automação &amp; Software<br>
+<strong>Aplicação:</strong> todos os projetos de software, plugins e automação desenvolvidos pela STMA<br>
+<strong>Arquivo recomendado no repositório:</strong> <code>DEVELOPMENT.md</code><br>
+<strong>Situação:</strong> modelo proposto, sujeito à aprovação da liderança STMA.</p>
+</blockquote></div><div class="unit "><h2>Controle documental</h2></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Organização</td>
+<td>STMA · Sistema Engenharia</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Projeto</td>
+<td>[Nome oficial / comercial]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Repositório</td>
+<td><code>stma-[nomedoplugin]-[plataforma]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Identificação do documento</td>
+<td>[Identificador próprio do projeto, caso definido]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Norma de referência</td>
+<td><code>TI-ENG-001-NOR</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Versão do documento</td>
+<td><code>0.1.0</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Versão do software</td>
+<td><code>0.1.0</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Status</td>
+<td>[Planejamento / Desenvolvimento / Homologação / Produção / Descontinuado]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Autor / responsável técnico</td>
+<td>[Nome / setor]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Revisor</td>
+<td>[Nome / setor]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Aprovação</td>
+<td>[Pendente / nome e data]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Atualizado em</td>
+<td>[AAAA-MM-DD]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Informação</th>
+</tr>
+</thead><tbody><tr>
+<td>Classificação da informação</td>
+<td>[Interno / Restrito / Público — conforme política vigente]</td>
+</tr></tbody></table></div><div class="unit "><h3>Histórico de revisões</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Data</th>
+<th>Versão doc.</th>
+<th>Autor</th>
+<th>Mudança</th>
+<th>PR / aprovação</th>
+</tr>
+</thead><tbody><tr>
+<td>[AAAA-MM-DD]</td>
+<td>0.1.0</td>
+<td>[Nome]</td>
+<td>Criação da documentação</td>
+<td>[Link]</td>
+</tr></tbody></table></div><div class="unit "><hr></div><div class="unit "><h2>1. Visão geral e contexto</h2></div><div class="unit "><h3>1.1 Resumo executivo</h3></div><div class="unit "><p>[Descreva em 4–8 linhas o problema real, a solução, os usuários, a plataforma e o benefício esperado. Separe claramente o que já existe do que está planejado.]</p></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">02 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 02</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><h3>1.2 Problema e justificativa</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Processo atual:</strong> [Como a atividade é realizada hoje]</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Dificuldade identificada:</strong> [Retrabalho, tempo, incompatibilidade, erro humano, ausência de rastreabilidade etc.]</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Solução proposta:</strong> [O que será automatizado ou disponibilizado]</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Benefício mensurável:</strong> [Indicador, linha de base e meta — caso existam]</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+<li><strong>Limitações conhecidas:</strong> [O que o projeto ainda não resolve]</li></ul></div><div class="unit "><h3>1.3 Escopo</h3></div><div class="unit "><p><strong>Incluído:</strong></p></div><div class="unit "><ul class="md-list">
+
+
+<li>[Funcionalidade 1]</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+<li>[Funcionalidade 2]</li></ul></div><div class="unit "><p><strong>Excluído:</strong></p></div><div class="unit last-list "><ul class="md-list">
+
+<li>[Funcionalidade que não faz parte desta entrega]</li></ul></div><div class="unit "><p><strong>Critérios de aceite:</strong></p></div><div class="unit "><ul class="md-list">
+
+
+<li>[CA-01] Dado [cenário], quando [ação], então [resultado verificável].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+<li>[CA-02] [Comportamento esperado, incluindo falhas e limites].</li></ul></div><div class="unit "><h3>1.4 Público e responsáveis</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Papel</th>
+<th>Responsável</th>
+<th>Atribuição</th>
+</tr>
+</thead><tbody><tr>
+<td>Product owner / solicitante</td>
+<td>[Nome / área]</td>
+<td>Priorização e aceite funcional</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Papel</th>
+<th>Responsável</th>
+<th>Atribuição</th>
+</tr>
+</thead><tbody><tr>
+<td>Desenvolvimento</td>
+<td>[Nome / área]</td>
+<td>Implementação, testes e manutenção</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Papel</th>
+<th>Responsável</th>
+<th>Atribuição</th>
+</tr>
+</thead><tbody><tr>
+<td>Engenharia responsável</td>
+<td>[Nome / disciplina ou N/A]</td>
+<td>Validação do comportamento técnico e resultados</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Papel</th>
+<th>Responsável</th>
+<th>Atribuição</th>
+</tr>
+</thead><tbody><tr>
+<td>Revisor do PR</td>
+<td>[Nome]</td>
+<td>Análise de qualidade, segurança e consistência</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Papel</th>
+<th>Responsável</th>
+<th>Atribuição</th>
+</tr>
+</thead><tbody><tr>
+<td>Operação / suporte</td>
+<td>[Nome / área]</td>
+<td>Implantação, incidentes e continuidade</td>
+</tr></tbody></table></div><div class="unit "><blockquote>
+<p>O aceite de engenharia é obrigatório quando a solução interfere em elementos, parâmetros, quantitativos, documentos ou decisões técnicas de engenharia. A aprovação do software não substitui a responsabilidade profissional aplicável.</p>
+</blockquote></div><div class="unit "><h2>2. Stack tecnológica e compatibilidade</h2></div><div class="unit "><blockquote>
+<p><strong>Obrigatório:</strong> registrar a stack <strong>realmente utilizada</strong>, incluindo versões. Não listar linguagens ou ferramentas apenas por estarem previstas.</p>
+</blockquote></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">03 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 03</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><h3>2.1 Linguagens, frameworks e ferramentas</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Linguagem / tecnologia</th>
+<th>Versão</th>
+<th>Aplicação no projeto</th>
+<th>Referência</th>
+</tr>
+</thead><tbody><tr>
+<td>Interface</td>
+<td>[Ex.: TypeScript / XAML / HTML / N/A]</td>
+<td>[Versão]</td>
+<td>[Telas, componentes etc.]</td>
+<td>[Pasta / link]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Linguagem / tecnologia</th>
+<th>Versão</th>
+<th>Aplicação no projeto</th>
+<th>Referência</th>
+</tr>
+</thead><tbody><tr>
+<td>Lógica de negócio</td>
+<td>[Ex.: C# / TypeScript / Python]</td>
+<td>[Versão]</td>
+<td>[Serviços, comandos, cálculos]</td>
+<td>[Pasta / link]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Linguagem / tecnologia</th>
+<th>Versão</th>
+<th>Aplicação no projeto</th>
+<th>Referência</th>
+</tr>
+</thead><tbody><tr>
+<td>API / backend</td>
+<td>[Tecnologia ou N/A]</td>
+<td>[Versão]</td>
+<td>[Endpoints / processos]</td>
+<td>[Pasta / link]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Linguagem / tecnologia</th>
+<th>Versão</th>
+<th>Aplicação no projeto</th>
+<th>Referência</th>
+</tr>
+</thead><tbody><tr>
+<td>Persistência</td>
+<td>[SGBD / arquivos / N/A]</td>
+<td>[Versão]</td>
+<td>[Dados persistidos]</td>
+<td>[Pasta / link]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Linguagem / tecnologia</th>
+<th>Versão</th>
+<th>Aplicação no projeto</th>
+<th>Referência</th>
+</tr>
+</thead><tbody><tr>
+<td>Hospedeiro / SDK</td>
+<td>[Ex.: Autodesk Revit API]</td>
+<td>[Versão exata]</td>
+<td>[Integração com a plataforma]</td>
+<td>[Documentação]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Linguagem / tecnologia</th>
+<th>Versão</th>
+<th>Aplicação no projeto</th>
+<th>Referência</th>
+</tr>
+</thead><tbody><tr>
+<td>Build / testes</td>
+<td>[Ferramentas]</td>
+<td>[Versão]</td>
+<td>[Compilação / execução]</td>
+<td>[Scripts / CI]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Linguagem / tecnologia</th>
+<th>Versão</th>
+<th>Aplicação no projeto</th>
+<th>Referência</th>
+</tr>
+</thead><tbody><tr>
+<td>Infraestrutura</td>
+<td>[Ambiente / serviço / N/A]</td>
+<td>[Versão]</td>
+<td>[Hospedagem / distribuição]</td>
+<td>[Registro]</td>
+</tr></tbody></table></div><div class="unit "><h3>2.2 Plataformas suportadas</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Plataforma</th>
+<th>Versão</th>
+<th>SO / arquitetura</th>
+<th>Status</th>
+<th>Observação</th>
+</tr>
+</thead><tbody><tr>
+<td>[Ex.: Revit]</td>
+<td>[2026]</td>
+<td>[Windows x64]</td>
+<td>[Testada / Prevista / Não suportada]</td>
+<td>[Restrição]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Plataforma</th>
+<th>Versão</th>
+<th>SO / arquitetura</th>
+<th>Status</th>
+<th>Observação</th>
+</tr>
+</thead><tbody><tr>
+<td>[Ex.: navegador]</td>
+<td>[Versões]</td>
+<td>[Ambiente]</td>
+<td>[Status]</td>
+<td>[Restrição]</td>
+</tr></tbody></table></div><div class="unit "><ul class="md-list">
+
+
+
+
+<li><strong>Versão mínima exigida:</strong> [Versões de runtimes, SDKs e ferramentas].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+<li><strong>Dependências externas:</strong> [Nome, versão, licença, motivo de uso].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+<li><strong>Licenças e redistribuição:</strong> [Restrições de distribuição e componentes de terceiros].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+<li><strong>Matriz de compatibilidade verificada em:</strong> [AAAA-MM-DD].</li></ul></div><div class="unit "><h2>3. Organização do repositório</h2></div><div class="unit "><p><strong>Convenção STMA (obrigatória):</strong> <code>stma-nomedoplugin-plataforma</code>.</p></div><div class="unit "><ul class="md-list">
+
+
+
+<li>Letras minúsculas ASCII, números e hífens; sem espaços, acentos ou underscores.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+<li>O nome do produto/plugin deve ser estável e a plataforma deve refletir seu ambiente principal.</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+<li><strong>Exemplos:</strong> <code>stma-mustmep-revit</code>, <code>stma-mustelectrical-revit</code>, <code>stma-relatorios-web</code>.</li></ul></div><div class="unit "><p><strong>Estrutura de referência (adaptável à stack):</strong></p></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">04 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 04</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><div class="code-wrap"><div class="code-head"><span>text · Exemplo editável</span><span>01/01</span></div><pre><code>stma-[nomedoplugin]-[plataforma]/
+├── README.md                 # Visão inicial, requisitos e primeiros passos
+├── DEVELOPMENT.md            # Este documento: funcionamento interno e padrões
+├── CHANGELOG.md              # Histórico de releases
+├── .gitignore
+├── .github/
+│   ├── workflows/            # CI, validação, empacotamento (se aplicável)
+│   └── PULL_REQUEST_TEMPLATE.md
+├── docs/
+│   ├── architecture.md       # Diagramas e arquitetura detalhada
+│   ├── adr/                  # Decisões arquiteturais
+│   ├── user-guide.md         # Manual para usuários finais
+│   └── ai-usage-log.md       # Registro de usos relevantes de IA
+├── src/                      # Código de produção
+├── tests/                    # Testes automatizados e fixtures
+├── examples/                 # Dados/modelos de exemplo sem informação sigilosa
+└── scripts/                  # Build, validação, release e manutenção</code></pre></div></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Diretório / módulo real</th>
+<th>Responsabilidade</th>
+<th>Ponto de entrada</th>
+<th>Dependências principais</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[src/...]</code></td>
+<td>[O que implementa]</td>
+<td><code>[arquivo/classe/função]</code></td>
+<td>[Módulos]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Diretório / módulo real</th>
+<th>Responsabilidade</th>
+<th>Ponto de entrada</th>
+<th>Dependências principais</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[src/...]</code></td>
+<td>[O que implementa]</td>
+<td><code>[arquivo/classe/função]</code></td>
+<td>[Módulos]</td>
+</tr></tbody></table></div><div class="unit "><blockquote>
+<p>Se a stack exige outra estrutura (por exemplo, solução <code>.sln</code> com múltiplos projetos ou monorepo), documentar a organização efetiva; não reorganizar código apenas para imitar o exemplo.</p>
+</blockquote></div><div class="unit "><h2>4. Arquitetura e funcionamento do código</h2></div><div class="unit "><blockquote>
+<p><strong>Esta é a seção central.</strong> Um desenvolvedor novo deve conseguir identificar como a aplicação inicia, como os dados circulam, onde as regras são aplicadas e como localizar uma falha.</p>
+</blockquote></div><div class="unit "><h3>4.1 Modelo arquitetural</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Estilo adotado:</strong> [Ex.: modular monolith / arquitetura em camadas / hexagonal / plugin orientado a comandos].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Motivação:</strong> [Por que esta abordagem foi escolhida].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Principais limites:</strong> [O que UI, domínio, infraestrutura e integrações podem acessar].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Diagrama:</strong> [<code>docs/architecture.md</code> ou caminho].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+<li><strong>ADRs relevantes:</strong> [<code>docs/adr/0001-...md</code>].</li></ul></div><div class="unit "><h3>4.2 Inicialização e ciclo de vida</h3></div><div class="unit "><ol class="md-list" start="1">
+
+
+
+
+
+
+
+<li><strong>Entrada:</strong> [Evento que inicia: comando do plugin, rota HTTP, clique do usuário, job etc.].</li></ol></div><div class="unit "><ol class="md-list" start="2">
+
+
+
+
+
+
+
+<li><strong>Inicialização:</strong> [Classe/arquivo responsável, configuração e serviços criados].</li></ol></div><div class="unit "><ol class="md-list" start="3">
+
+
+
+
+
+
+
+<li><strong>Validação:</strong> [Pré-condições, permissões, versão da plataforma, dados].</li></ol></div><div class="unit "><ol class="md-list" start="4">
+
+
+
+
+
+
+
+<li><strong>Processamento:</strong> [Serviços e regras acionados, na ordem].</li></ol></div><div class="unit "><ol class="md-list" start="5">
+
+
+
+
+
+
+
+<li><strong>Persistência / efeito:</strong> [Alterações em modelo, banco, arquivos ou serviço externo].</li></ol></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">05 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 05</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><ol class="md-list" start="6">
+
+
+
+
+
+
+
+<li><strong>Saída:</strong> [Resposta, interface, relatório, alteração de elemento].</li></ol></div><div class="unit last-list "><ol class="md-list" start="7">
+
+
+
+
+
+
+
+<li><strong>Falhas e recuperação:</strong> [Tratamento, rollback, logs e feedback ao usuário].</li></ol></div><div class="unit "><p><strong>Sequência de exemplo a substituir pela implementação real:</strong></p></div><div class="unit "><div class="code-wrap"><div class="code-head"><span>mermaid · Exemplo editável</span><span>01/01</span></div><pre><code>flowchart TD
+    A[Usuário ou integração] --&gt; B[Ponto de entrada]
+    B --&gt; C[Validação de entradas e contexto]
+    C --&gt; D[Serviço de aplicação]
+    D --&gt; E[Regras de domínio]
+    E --&gt; F[Adaptador de plataforma ou persistência]
+    F --&gt; G[Resultado e logs]</code></pre><div class="mermaid-hint">Diagrama de referência em sintaxe Mermaid · substituir pelo fluxo validado do projeto</div></div></div><div class="unit "><h3>4.3 Mapa de módulos</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Módulo / namespace</th>
+<th>Objetivo</th>
+<th>Entradas</th>
+<th>Saídas</th>
+<th>Restrições</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[Nome real]</code></td>
+<td>[Responsabilidade única]</td>
+<td>[Tipos/eventos]</td>
+<td>[Tipos/efeitos]</td>
+<td>[O que não deve fazer]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Módulo / namespace</th>
+<th>Objetivo</th>
+<th>Entradas</th>
+<th>Saídas</th>
+<th>Restrições</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[Nome real]</code></td>
+<td>[Responsabilidade única]</td>
+<td>[Tipos/eventos]</td>
+<td>[Tipos/efeitos]</td>
+<td>[O que não deve fazer]</td>
+</tr></tbody></table></div><div class="unit "><h3>4.4 Fluxos críticos</h3></div><div class="unit "><p>Descrever <strong>cada fluxo relevante</strong> usando o formato abaixo (replicar conforme necessário).</p></div><div class="unit "><h4>FL-01 — [Nome do fluxo]</h4></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+<li><strong>Gatilho:</strong> [Como o fluxo começa].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+<li><strong>Pré-condições:</strong> [Estado necessário].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+<li><strong>Entrada:</strong> [Tipos, origem, formato e validação].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+<li><strong>Passos do código:</strong>
+<ol>
+<li><code>[Arquivo/Classe.Metodo()]</code>: [Responsabilidade].</li>
+<li><code>[Arquivo/Classe.Metodo()]</code>: [Responsabilidade].</li>
+<li><code>[Arquivo/Classe.Metodo()]</code>: [Responsabilidade].</li>
+</ol>
+</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+<li><strong>Saída / alteração produzida:</strong> [Resultado observável].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+<li><strong>Tratamento de erros:</strong> [Comportamento em entradas inválidas, ausência de dados ou falha de integração].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+<li><strong>Teste que comprova:</strong> <code>[tests/...]</code> / [identificador].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+
+
+
+<li><strong>Issue / requisito:</strong> [Link].</li></ul></div><div class="unit "><h3>4.5 Regras de negócio e invariantes</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>ID</th>
+<th>Regra obrigatória</th>
+<th>Onde é implementada</th>
+<th>Como é testada</th>
+</tr>
+</thead><tbody><tr>
+<td>RN-01</td>
+<td>[Ex.: uma operação não altera dados fora do conjunto selecionado]</td>
+<td><code>[arquivo:classe]</code></td>
+<td><code>[teste]</code></td>
+</tr></tbody></table></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">06 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 06</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit is-table table-start"><table class="data-table"><thead>
+<tr>
+<th>ID</th>
+<th>Regra obrigatória</th>
+<th>Onde é implementada</th>
+<th>Como é testada</th>
+</tr>
+</thead><tbody><tr>
+<td>RN-02</td>
+<td>[Ex.: executar duas vezes não deve criar duplicações indevidas]</td>
+<td><code>[arquivo:classe]</code></td>
+<td><code>[teste]</code></td>
+</tr></tbody></table></div><div class="unit "><p>Documentar explicitamente unidades, tolerâncias, precisão, arredondamento, estado mutável, idempotência e condições de borda quando fizerem parte do domínio.</p></div><div class="unit "><h2>5. Contratos, dados e integrações</h2></div><div class="unit "><h3>5.1 Modelos de dados</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Entidade / DTO</th>
+<th>Campos essenciais</th>
+<th>Origem</th>
+<th>Validação</th>
+<th>Persistência</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[Nome]</code></td>
+<td><code>[campo:tipo]</code></td>
+<td>[Fonte]</td>
+<td>[Regras]</td>
+<td>[Destino / N/A]</td>
+</tr></tbody></table></div><div class="unit "><h3>5.2 Interfaces e integrações</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Integração / contrato</th>
+<th>Protocolo ou API</th>
+<th>Versão</th>
+<th>Autenticação</th>
+<th>Falhas / timeout</th>
+<th>Responsável</th>
+</tr>
+</thead><tbody><tr>
+<td>[Sistema / biblioteca / SDK]</td>
+<td>[REST, SDK, arquivo etc.]</td>
+<td>[Versão]</td>
+<td>[Método / N/A]</td>
+<td>[Política de erro]</td>
+<td>[Setor]</td>
+</tr></tbody></table></div><div class="unit "><p>Para APIs HTTP, documentar rotas, métodos, esquemas de request/response, códigos de status e versionamento; preferir contrato OpenAPI quando aplicável. Para arquivos, documentar esquema, codificação, convenção de nome e compatibilidade. <strong>Nunca inserir chaves, tokens, senhas ou URLs com credenciais neste documento.</strong></p></div><div class="unit "><h3>5.3 Migrações e compatibilidade de dados</h3></div><div class="unit "><ul class="md-list">
+
+
+
+<li><strong>Mudanças incompatíveis:</strong> [Como são detectadas e comunicadas].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+<li><strong>Estratégia de migração:</strong> [Script, backup, validação e reversão].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+<li><strong>Retenção e privacidade:</strong> [Regras aprovadas pela STMA, quando definidas].</li></ul></div><div class="unit "><h2>6. Requisitos específicos de engenharia e plugins</h2></div><div class="unit "><blockquote>
+<p>Preencher quando houver Revit, AutoCAD, BIM, CAD, cálculos, quantitativos, automação de documentos ou outra integração de engenharia. Caso contrário: <strong>Não se aplica — [justificativa]</strong>.</p>
+</blockquote></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Tema</th>
+<th>Registro obrigatório</th>
+</tr>
+</thead><tbody><tr>
+<td>Software hospedeiro</td>
+<td>[Produto, edição, versão e build testadas]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tema</th>
+<th>Registro obrigatório</th>
+</tr>
+</thead><tbody><tr>
+<td>SDK / API</td>
+<td>[Versão, dependências e limitações]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tema</th>
+<th>Registro obrigatório</th>
+</tr>
+</thead><tbody><tr>
+<td>Disciplinas afetadas</td>
+<td>[Elétrica / MEP / hidráulica / PPCI / estrutura / outras]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tema</th>
+<th>Registro obrigatório</th>
+</tr>
+</thead><tbody><tr>
+<td>Elementos e parâmetros</td>
+<td>[Categorias, classes, parâmetros, IDs, GUIDs, nomes compartilhados]</td>
+</tr></tbody></table></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">07 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 07</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit is-table table-start"><table class="data-table"><thead>
+<tr>
+<th>Tema</th>
+<th>Registro obrigatório</th>
+</tr>
+</thead><tbody><tr>
+<td>Unidades e coordenadas</td>
+<td>[Unidades internas, unidades de exibição, transformações e tolerâncias]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tema</th>
+<th>Registro obrigatório</th>
+</tr>
+</thead><tbody><tr>
+<td>Transações e operações</td>
+<td>[Abertura, commit, rollback, falha parcial, undo quando disponível]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tema</th>
+<th>Registro obrigatório</th>
+</tr>
+</thead><tbody><tr>
+<td>Segurança do modelo</td>
+<td>[Quando é somente leitura, quando escreve, como previne perda de dados]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tema</th>
+<th>Registro obrigatório</th>
+</tr>
+</thead><tbody><tr>
+<td>Restrições do hospedeiro</td>
+<td>[Contexto de execução, thread, documento ativo, eventos, API limitations]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tema</th>
+<th>Registro obrigatório</th>
+</tr>
+</thead><tbody><tr>
+<td>Modelos de teste</td>
+<td>[Caminhos/versionamento de arquivos desidentificados]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tema</th>
+<th>Registro obrigatório</th>
+</tr>
+</thead><tbody><tr>
+<td>Validação de engenharia</td>
+<td>[Responsável, critérios e evidências]</td>
+</tr></tbody></table></div><div class="unit "><h3>6.1 Cenários mínimos de validação técnica</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Cenário válido:</strong> [Modelo representativo e resultado esperado].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Modelo vazio ou incompleto:</strong> [Tratamento sem travamento].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Elementos ausentes, duplicados ou desconectados:</strong> [Comportamento].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Unidades / coordenadas / transformações:</strong> [Verificação].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Reexecução do comando:</strong> [Sem efeitos cumulativos indesejados, quando aplicável].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Falha durante escrita:</strong> [Rollback e integridade do modelo].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Compatibilidade por versão:</strong> [Evidência por versão suportada].</li></ul></div><div class="unit "><p><strong>Matriz de verificação:</strong></p></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Caso</th>
+<th>Ambiente / modelo</th>
+<th>Esperado</th>
+<th>Obtido</th>
+<th>Evidência</th>
+<th>Resultado</th>
+</tr>
+</thead><tbody><tr>
+<td>[ENG-001]</td>
+<td>[Versão e modelo]</td>
+<td>[Critério]</td>
+<td>[Observado]</td>
+<td>[Link / arquivo]</td>
+<td>[Aprovado / Reprovado / Não executado]</td>
+</tr></tbody></table></div><div class="unit "><blockquote>
+<p><strong>Não declarar “testado no Revit/AutoCAD” apenas porque o build compilou ou os testes sem interface passaram.</strong> Registrar separadamente compilação, testes automatizados, testes de integração e execução real no software hospedeiro.</p>
+</blockquote></div><div class="unit "><h2>7. Padrões de desenvolvimento</h2></div><div class="unit "><h3>7.1 Princípios obrigatórios</h3></div><div class="unit "><ol class="md-list" start="1">
+
+
+
+
+
+
+
+
+<li><strong>Legibilidade:</strong> nomes claros, funções coesas, comentários que expliquem intenção ou limitações (não narração óbvia).</li></ol></div><div class="unit "><ol class="md-list" start="2">
+
+
+
+
+
+
+
+
+<li><strong>Separação de responsabilidades:</strong> lógica de domínio isolada de UI, armazenamento e dependências específicas da plataforma sempre que viável.</li></ol></div><div class="unit "><ol class="md-list" start="3">
+
+
+
+
+
+
+
+
+<li><strong>Código verificável:</strong> alterações com critérios de aceite, testes proporcionais ao risco e evidências.</li></ol></div><div class="unit "><ol class="md-list" start="4">
+
+
+
+
+
+
+
+
+<li><strong>Previsibilidade:</strong> tratar falhas explicitamente, evitar efeitos colaterais implícitos e mudanças de estado não controladas.</li></ol></div><div class="unit "><ol class="md-list" start="5">
+
+
+
+
+
+
+
+
+<li><strong>Compatibilidade:</strong> preservar contratos públicos e documentar alterações incompatíveis.</li></ol></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">08 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 08</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><ol class="md-list" start="6">
+
+
+
+
+
+
+
+
+<li><strong>Segurança:</strong> validar entradas, aplicar privilégio mínimo, não registrar dados sensíveis e nunca versionar segredos.</li></ol></div><div class="unit "><ol class="md-list" start="7">
+
+
+
+
+
+
+
+
+<li><strong>Manutenibilidade:</strong> evitar dependências desnecessárias, código morto, duplicações e configurações ocultas.</li></ol></div><div class="unit last-list "><ol class="md-list" start="8">
+
+
+
+
+
+
+
+
+<li><strong>Consistência:</strong> aplicar ferramentas automáticas de formatação, análise estática e testes compatíveis com a stack.</li></ol></div><div class="unit "><h3>7.2 Convenções da stack (preenchimento obrigatório)</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Assunto</th>
+<th>Padrão do projeto</th>
+<th>Regra / configuração</th>
+</tr>
+</thead><tbody><tr>
+<td>Formatação</td>
+<td>[Ferramenta e arquivo]</td>
+<td>[Como executar]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Assunto</th>
+<th>Padrão do projeto</th>
+<th>Regra / configuração</th>
+</tr>
+</thead><tbody><tr>
+<td>Lint / análise estática</td>
+<td>[Ferramenta e arquivo]</td>
+<td>[Severidade / política]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Assunto</th>
+<th>Padrão do projeto</th>
+<th>Regra / configuração</th>
+</tr>
+</thead><tbody><tr>
+<td>Nomenclatura</td>
+<td>[Classes, métodos, arquivos, diretórios]</td>
+<td>[Regra / referência]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Assunto</th>
+<th>Padrão do projeto</th>
+<th>Regra / configuração</th>
+</tr>
+</thead><tbody><tr>
+<td>Tipagem / nulidade</td>
+<td>[Ex.: strict / nullable enabled]</td>
+<td>[Escopo / exceções]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Assunto</th>
+<th>Padrão do projeto</th>
+<th>Regra / configuração</th>
+</tr>
+</thead><tbody><tr>
+<td>Erros e exceções</td>
+<td>[Política]</td>
+<td>[Onde logar e como informar usuário]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Assunto</th>
+<th>Padrão do projeto</th>
+<th>Regra / configuração</th>
+</tr>
+</thead><tbody><tr>
+<td>Dependências</td>
+<td>[Gerenciador / lockfile]</td>
+<td>[Como atualizar e revisar]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Assunto</th>
+<th>Padrão do projeto</th>
+<th>Regra / configuração</th>
+</tr>
+</thead><tbody><tr>
+<td>Configuração</td>
+<td>[Variáveis / arquivos]</td>
+<td>[Valores padrão e validação]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Assunto</th>
+<th>Padrão do projeto</th>
+<th>Regra / configuração</th>
+</tr>
+</thead><tbody><tr>
+<td>Logs</td>
+<td>[Biblioteca / formato]</td>
+<td>[Níveis e contexto]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Assunto</th>
+<th>Padrão do projeto</th>
+<th>Regra / configuração</th>
+</tr>
+</thead><tbody><tr>
+<td>Cobertura / quality gate</td>
+<td>[Critério acordado]</td>
+<td>[Como auditar]</td>
+</tr></tbody></table></div><div class="unit "><p><strong>Arquivos de configuração:</strong> <code>[.editorconfig]</code>, <code>[eslint.config.*]</code>, <code>[*.csproj]</code>, <code>[pyproject.toml]</code> ou equivalentes realmente presentes no repositório.</p></div><div class="unit "><h3>7.3 Decisões arquiteturais (ADR)</h3></div><div class="unit "><p>Mudanças estruturais relevantes exigem registro em <code>docs/adr/</code> com <strong>contexto</strong>, <strong>alternativas</strong>, <strong>decisão</strong>, <strong>consequências</strong>, <strong>data</strong> e <strong>responsável</strong>. Não apagar ADRs anteriores: registrar substituição e referência cruzada.</p></div><div class="unit "><h2>8. Git, revisão e versionamento</h2></div><div class="unit "><h3>8.1 Branches</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Branch</th>
+<th>Uso</th>
+<th>Regra</th>
+</tr>
+</thead><tbody><tr>
+<td><code>main</code></td>
+<td>Estado estável / liberado</td>
+<td>Protegida; sem push direto</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Branch</th>
+<th>Uso</th>
+<th>Regra</th>
+</tr>
+</thead><tbody><tr>
+<td><code>feature/&lt;ticket&gt;-&lt;descricao&gt;</code></td>
+<td>Nova funcionalidade</td>
+<td>Criada a partir da base definida</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Branch</th>
+<th>Uso</th>
+<th>Regra</th>
+</tr>
+</thead><tbody><tr>
+<td><code>fix/&lt;ticket&gt;-&lt;descricao&gt;</code></td>
+<td>Correção de defeito</td>
+<td>Vincular issue e teste de regressão</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Branch</th>
+<th>Uso</th>
+<th>Regra</th>
+</tr>
+</thead><tbody><tr>
+<td><code>hotfix/&lt;ticket&gt;-&lt;descricao&gt;</code></td>
+<td>Incidente urgente</td>
+<td>Documentar urgência e revisão posterior</td>
+</tr></tbody></table></div><div class="unit "><p>Exemplos: <code>feature/ENG-142-exportacao-pdf</code>, <code>fix/ENG-158-calculo-unidades</code>.</p></div><div class="unit "><h3>8.2 Commits</h3></div><div class="unit "><p>Adotar <strong>Conventional Commits</strong>, com prefixos como <code>feat:</code>, <code>fix:</code>, <code>docs:</code>, <code>refactor:</code>, <code>test:</code> e <code>chore:</code>.</p></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">09 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 09</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><div class="code-wrap"><div class="code-head"><span>text · Exemplo editável</span><span>01/01</span></div><pre><code>feat: adiciona validação de conectividade dos conduítes
+fix: corrige conversão de unidades na exportação
+docs: documenta arquitetura do módulo de relatórios</code></pre></div></div><div class="unit "><h3>8.3 Pull request: conteúdo mínimo</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Issue / solicitação vinculada e descrição objetiva da mudança.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Escopo e arquivos/módulos afetados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Riscos, impactos em versões existentes e plano de reversão quando necessário.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Testes executados <strong>com resultados reais</strong> e distinção entre ambientes.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Capturas, logs sanitizados, modelos de teste ou outras evidências.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Atualização de <code>DEVELOPMENT.md</code>, <code>README.md</code>, <code>CHANGELOG.md</code> e ADR, conforme o impacto.</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Revisão por <strong>pelo menos uma pessoa diferente</strong> e CI aprovado, salvo exceção emergencial registrada.</li></ul></div><div class="unit "><h3>8.4 Releases</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Versão:</strong> SemVer <code>MAJOR.MINOR.PATCH</code>.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Tag:</strong> <code>vMAJOR.MINOR.PATCH</code> (ex.: <code>v1.2.3</code>).</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Changelog:</strong> registrar alterações por release em <code>CHANGELOG.md</code>.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Artefatos:</strong> identificar versão, plataforma-alvo, checksum se pertinente, instruções e forma de rollback.</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+<li><strong>Compatibilidade:</strong> atualizar matriz de versões suportadas.</li></ul></div><div class="unit "><h2>9. Configuração, build e execução</h2></div><div class="unit "><h3>9.1 Pré-requisitos</h3></div><div class="unit "><ul class="md-list">
+
+
+
+<li>[Sistema operacional, runtime, SDK, IDE, pacotes e versões].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+<li>[Permissões de acesso e dependências internas].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+<li>[Licenças de softwares hospedeiros quando necessárias].</li></ul></div><div class="unit "><h3>9.2 Instalação para desenvolvimento</h3></div><div class="unit "><div class="code-wrap"><div class="code-head"><span>bash · Exemplo editável</span><span>01/01</span></div><pre><code># Substituir por comandos reais testados no repositório.
+# Exemplo ilustrativo; não é instrução de execução pronta.
+# git clone &lt;URL-INTERNA-DO-REPOSITORIO&gt;
+# cd stma-[nomedoplugin]-[plataforma]
+# [instalar dependências]</code></pre></div></div><div class="unit "><h3>9.3 Configuração por ambiente</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Variável / ajuste</th>
+<th>Finalidade</th>
+<th>Ambiente</th>
+<th>Origem segura / valor de exemplo</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[NOME_VARIAVEL]</code></td>
+<td>[Uso]</td>
+<td>[dev/homolog/prod]</td>
+<td><code>[valor-ficticio]</code></td>
+</tr></tbody></table></div><div class="unit "><ul class="md-list">
+
+
+
+<li><strong>Ambientes:</strong> desenvolvimento, homologação e produção com configurações e credenciais próprias.</li></ul></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">10 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 10</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><ul class="md-list">
+
+
+
+<li><strong>Segredos:</strong> usar o mecanismo aprovado pelo ambiente; não commitar <code>.env</code> com dados reais, tokens ou arquivos de credenciais.</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+<li><strong>Configuração de referência:</strong> [Caminho para <code>.env.example</code> ou equivalente, sem segredos].</li></ul></div><div class="unit "><h3>9.4 Comandos oficiais do projeto</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Operação</th>
+<th>Comando realmente executável</th>
+<th>Resultado esperado</th>
+</tr>
+</thead><tbody><tr>
+<td>Restaurar dependências</td>
+<td><code>[comando]</code></td>
+<td>[Resultado]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Operação</th>
+<th>Comando realmente executável</th>
+<th>Resultado esperado</th>
+</tr>
+</thead><tbody><tr>
+<td>Compilar</td>
+<td><code>[comando]</code></td>
+<td>[Resultado]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Operação</th>
+<th>Comando realmente executável</th>
+<th>Resultado esperado</th>
+</tr>
+</thead><tbody><tr>
+<td>Executar localmente</td>
+<td><code>[comando]</code></td>
+<td>[Resultado]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Operação</th>
+<th>Comando realmente executável</th>
+<th>Resultado esperado</th>
+</tr>
+</thead><tbody><tr>
+<td>Testes unitários</td>
+<td><code>[comando]</code></td>
+<td>[Resultado]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Operação</th>
+<th>Comando realmente executável</th>
+<th>Resultado esperado</th>
+</tr>
+</thead><tbody><tr>
+<td>Testes de integração</td>
+<td><code>[comando]</code></td>
+<td>[Resultado]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Operação</th>
+<th>Comando realmente executável</th>
+<th>Resultado esperado</th>
+</tr>
+</thead><tbody><tr>
+<td>Formatar / lint</td>
+<td><code>[comando]</code></td>
+<td>[Resultado]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Operação</th>
+<th>Comando realmente executável</th>
+<th>Resultado esperado</th>
+</tr>
+</thead><tbody><tr>
+<td>Gerar release</td>
+<td><code>[comando]</code></td>
+<td>[Artefato / diretório]</td>
+</tr></tbody></table></div><div class="unit "><h3>9.5 Diagnóstico rápido</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Sintoma</th>
+<th>Causa provável</th>
+<th>Como investigar</th>
+<th>Correção / mitigação</th>
+</tr>
+</thead><tbody><tr>
+<td>[Falha]</td>
+<td>[Hipótese]</td>
+<td>[Log / teste / caminho]</td>
+<td>[Procedimento]</td>
+</tr></tbody></table></div><div class="unit "><h2>10. Estratégia de testes e evidências</h2></div><div class="unit "><h3>10.1 Pirâmide de testes ajustada ao risco</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Tipo</th>
+<th>O que comprova</th>
+<th>Ambiente</th>
+<th>Local dos testes</th>
+</tr>
+</thead><tbody><tr>
+<td>Unitário</td>
+<td>Regras e algoritmos isolados</td>
+<td>[Runtime]</td>
+<td><code>[tests/...]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tipo</th>
+<th>O que comprova</th>
+<th>Ambiente</th>
+<th>Local dos testes</th>
+</tr>
+</thead><tbody><tr>
+<td>Integração</td>
+<td>Comunicação entre módulos / SDKs</td>
+<td>[Ambiente]</td>
+<td><code>[tests/...]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tipo</th>
+<th>O que comprova</th>
+<th>Ambiente</th>
+<th>Local dos testes</th>
+</tr>
+</thead><tbody><tr>
+<td>End-to-end / UI</td>
+<td>Fluxo completo do usuário</td>
+<td>[Ambiente]</td>
+<td><code>[tests/...]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tipo</th>
+<th>O que comprova</th>
+<th>Ambiente</th>
+<th>Local dos testes</th>
+</tr>
+</thead><tbody><tr>
+<td>Homologação de engenharia</td>
+<td>Resultado no modelo ou documento real de teste</td>
+<td>[Software / versão]</td>
+<td><code>[docs/... ou sistema]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Tipo</th>
+<th>O que comprova</th>
+<th>Ambiente</th>
+<th>Local dos testes</th>
+</tr>
+</thead><tbody><tr>
+<td>Regressão</td>
+<td>Não quebra de comportamento existente</td>
+<td>[Ambiente]</td>
+<td><code>[tests/...]</code></td>
+</tr></tbody></table></div><div class="unit "><h3>10.2 Execuções realizadas</h3></div><div class="unit "><blockquote>
+<p>Usar <strong>resultados observados</strong>, nunca valores presumidos. Não confundir “não executado” com “aprovado”.</p>
+</blockquote></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">11 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 11</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit is-table table-start"><table class="data-table"><thead>
+<tr>
+<th>Data</th>
+<th>Commit</th>
+<th>Comando / cenário</th>
+<th>Ambiente</th>
+<th>Resultado</th>
+<th>Evidência</th>
+</tr>
+</thead><tbody><tr>
+<td>[AAAA-MM-DD]</td>
+<td><code>[SHA]</code></td>
+<td><code>[comando real]</code></td>
+<td>[SO / versão]</td>
+<td>[Aprovado / Reprovado / Não executado]</td>
+<td>[Link / log]</td>
+</tr></tbody></table></div><div class="unit "><h3>10.3 Critério de qualidade para merge / entrega</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Critérios de aceite implementados e verificados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Build e análises automatizadas aprovados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Testes relevantes executados e falhas justificadas.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Integrações e comportamento no hospedeiro testados quando aplicável.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Revisão técnica por pessoa distinta concluída.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Segurança, compatibilidade e documentação revisadas.</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Evidências e versão vinculadas ao PR / release.</li></ul></div><div class="unit "><h2>11. Segurança, informações e observabilidade</h2></div><div class="unit "><h3>11.1 Segurança por padrão</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Acesso:</strong> [Papéis e permissões por ambiente, princípio do menor privilégio].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Validação:</strong> [Fronteiras de entrada e verificações].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Dependências:</strong> [Política de atualização, licenças e vulnerabilidades].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Segredos:</strong> [Onde são armazenados e como rotacionar, sem valores].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Dados pessoais / de clientes:</strong> [Classificação, minimização, compartilhamento e retenção conforme política definida].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Logs:</strong> [Campos permitidos, redaction, acesso e prazo de retenção aprovado].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Operações destrutivas:</strong> [Confirmação, backup, limites e possibilidade de reversão].</li></ul></div><div class="unit "><h3>11.2 Observabilidade</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Evento relevante</th>
+<th>Nível</th>
+<th>Contexto mínimo não sensível</th>
+<th>Destino</th>
+</tr>
+</thead><tbody><tr>
+<td>[Inicialização / erro / operação concluída]</td>
+<td>[INFO/WARN/ERROR]</td>
+<td>[Correlação, versão, módulo]</td>
+<td>[Arquivo / serviço]</td>
+</tr></tbody></table></div><div class="unit "><h3>11.3 Incidentes</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Canal oficial:</strong> [Link ou contato].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Classificação de impacto:</strong> [Critérios e prioridade, caso definidos].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Primeiros passos:</strong> [Coleta de versão, logs, reprodução sem dados restritos].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Mitigação / rollback:</strong> [Procedimento real ou link].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+<li><strong>RCA (quando relevante):</strong> [Causa raiz, correção definitiva, teste de regressão, responsável e prazo].</li></ul></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">12 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 12</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><h2>12. Uso de inteligência artificial no desenvolvimento</h2></div><div class="unit "><p><strong>Ferramenta corporativa informada:</strong> ChatGPT Business, com recursos Codex e Work conforme disponibilidade da contratação. Demais ferramentas ou licenças somente devem constar após confirmação pelo inventário de TI.</p></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Cada setor utiliza sua pasta/espaço organizacional próprio, conforme estrutura interna da STMA.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>IA auxilia especificação, implementação, revisão, testes e documentação; <strong>não substitui revisão humana</strong> nem validação de engenharia.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Antes de uma execução extensa em Codex/Work, registrar objetivo, escopo, arquivos autorizados, limites e resultado esperado.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Acompanhar os <strong>limites de uso efetivamente exibidos na conta</strong>; não presumir cotas ou afirmar números não verificados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Não enviar segredos, credenciais ou dados restritos sem base autorizada; reduzir o volume de dados ao mínimo necessário.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Validar toda alteração de código de IA por diff, testes, revisão e execução na plataforma correta.</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+
+
+<li>Registrar ações relevantes, especialmente alterações extensas, integrações, decisões técnicas ou tarefas de consumo expressivo.</li></ul></div><div class="unit "><h3>12.1 Registro de uso relevante</h3></div><div class="unit "><p><strong>Arquivo oficial por projeto:</strong> <code>docs/ai-usage-log.md</code> (ou sistema interno equivalente vinculado).</p></div><div class="unit "><div class="code-wrap"><div class="code-head"><span>markdown · Exemplo editável</span><span>01/01</span></div><pre><code>### AI-AAAA-0001 — [Resumo da atividade]
+- Data e período: [AAAA-MM-DD / início-fim]
+- Ferramenta / recurso: [ChatGPT Business / Codex / Work]
+- Solicitante e operador: [Nome / setor]
+- Projeto / issue: [Repositório / link]
+- Objetivo e escopo aprovado: [Descrição]
+- Entradas: [Tipos de fonte e classificação, sem segredos]
+- Alterações / saídas: [Arquivos, commits, PRs e artefatos]
+- Consumo observado: [Cota / limite, se a interface disponibilizar]
+- Revisão humana: [Responsável e análise realizada]
+- Testes e evidências: [Comandos, ambiente, resultados e links]
+- Resultado / pendências: [Aprovado, parcial ou descartado]</code></pre></div></div><div class="unit "><blockquote>
+<p>Não inserir no log conteúdo de prompts confidenciais ou copiar conversas completas para repositórios de acesso amplo. Registrar fatos auditáveis e referências seguras.</p>
+</blockquote></div><div class="unit "><h2>13. Implantação, release e manutenção</h2></div><div class="unit "><h3>13.1 Procedimento de implantação</h3></div><div class="unit "><ol class="md-list" start="1">
+
+
+
+
+
+
+<li>[Confirmar versão de destino e compatibilidade].</li></ol></div><div class="unit "><ol class="md-list" start="2">
+
+
+
+
+
+
+<li>[Executar backup, se houver escrita ou migração].</li></ol></div><div class="unit "><ol class="md-list" start="3">
+
+
+
+
+
+
+<li>[Gerar artefato a partir de tag/commit identificável].</li></ol></div><div class="unit "><ol class="md-list" start="4">
+
+
+
+
+
+
+<li>[Instalar ou publicar no ambiente correto].</li></ol></div><div class="unit "><ol class="md-list" start="5">
+
+
+
+
+
+
+<li>[Executar smoke test com evidência].</li></ol></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">13 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 13</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit last-list "><ol class="md-list" start="6">
+
+
+
+
+
+
+<li>[Registrar responsável, data e resultado].</li></ol></div><div class="unit "><h3>13.2 Rollback</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+<li><strong>Gatilho para reversão:</strong> [Condições].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+<li><strong>Versão anterior segura:</strong> [Tag e artefato].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+<li><strong>Procedimento:</strong> [Passos validados].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+<li><strong>Limitações:</strong> [Mudanças de dados/modelos não reversíveis automaticamente].</li></ul></div><div class="unit "><h3>13.3 Suporte e continuidade</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Dono técnico:</strong> [Nome / equipe].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Fluxo de bugs e solicitações:</strong> [Issues / sistema].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Atualizações do hospedeiro:</strong> [Responsável por verificar novas versões].</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+<li><strong>Dependências e manutenção preventiva:</strong> [Periodicidade a validar pela liderança].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+<li><strong>Descontinuação:</strong> [Política de aviso, arquivamento e retenção].</li></ul></div><div class="unit "><h2>14. Riscos, decisões e pendências</h2></div><div class="unit "><h3>14.1 Registro de riscos</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>ID</th>
+<th>Risco</th>
+<th>Impacto</th>
+<th>Probabilidade</th>
+<th>Mitigação</th>
+<th>Responsável</th>
+<th>Situação</th>
+</tr>
+</thead><tbody><tr>
+<td>R-01</td>
+<td>[Descrição]</td>
+<td>[Baixo/Médio/Alto]</td>
+<td>[Baixa/Média/Alta]</td>
+<td>[Ação]</td>
+<td>[Nome]</td>
+<td>[Aberto/Tratado]</td>
+</tr></tbody></table></div><div class="unit "><h3>14.2 Pendências e limitações</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>ID</th>
+<th>Tipo</th>
+<th>Descrição</th>
+<th>Próxima ação</th>
+<th>Responsável</th>
+<th>Prazo / issue</th>
+</tr>
+</thead><tbody><tr>
+<td>P-01</td>
+<td>[Bug / Dívida / Limitação]</td>
+<td>[Descrição verificável]</td>
+<td>[Ação]</td>
+<td>[Nome]</td>
+<td>[Link]</td>
+</tr></tbody></table></div><div class="unit "><h3>14.3 Dependências de decisão</h3></div><div class="unit "><ul class="md-list">
+
+
+<li>[Decisão aguardando responsável de engenharia / TI / liderança].</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+<li>[Política corporativa ainda não aprovada; não apresentar como regra definitiva].</li></ul></div><div class="unit "><h2>15. Apresentação e demonstração do projeto</h2></div><div class="unit "><blockquote>
+<p>Para reuniões técnicas, diretoria, outras disciplinas e clientes internos, apresentar fatos verificáveis e a versão exata da solução.</p>
+</blockquote></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Item</th>
+<th>Conteúdo recomendado</th>
+</tr>
+</thead><tbody><tr>
+<td>Contexto</td>
+<td>[Problema e processo anterior]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Item</th>
+<th>Conteúdo recomendado</th>
+</tr>
+</thead><tbody><tr>
+<td>Solução</td>
+<td>[Demonstração do fluxo principal]</td>
+</tr></tbody></table></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">14 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 14</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit is-table table-start"><table class="data-table"><thead>
+<tr>
+<th>Item</th>
+<th>Conteúdo recomendado</th>
+</tr>
+</thead><tbody><tr>
+<td>Arquitetura</td>
+<td>[Módulos e integrações em um diagrama]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Item</th>
+<th>Conteúdo recomendado</th>
+</tr>
+</thead><tbody><tr>
+<td>Evidências</td>
+<td>[Testes, capturas, logs sanitizados, modelo de teste]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Item</th>
+<th>Conteúdo recomendado</th>
+</tr>
+</thead><tbody><tr>
+<td>Resultado</td>
+<td>[O que foi medido, com unidade e período]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Item</th>
+<th>Conteúdo recomendado</th>
+</tr>
+</thead><tbody><tr>
+<td>Limitações</td>
+<td>[Itens não implementados ou ainda não homologados]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Item</th>
+<th>Conteúdo recomendado</th>
+</tr>
+</thead><tbody><tr>
+<td>Próximos passos</td>
+<td>[Backlog priorizado, responsável e prazo quando definido]</td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Item</th>
+<th>Conteúdo recomendado</th>
+</tr>
+</thead><tbody><tr>
+<td>Identificação</td>
+<td>[Versão, commit, ambiente e data da demonstração]</td>
+</tr></tbody></table></div><div class="unit "><p><strong>Não utilizar:</strong> dados fictícios apresentados como medições reais, promessa de compatibilidade não testada, logs sem contexto ou demonstração sem versão identificada.</p></div><div class="unit "><h2>16. Checklist de maturidade e entrega</h2></div><div class="unit "><h3>Antes do primeiro desenvolvimento</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+<li>[ ] Nome do repositório conforme <code>stma-nomedoplugin-plataforma</code>.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+<li>[ ] Responsável, objetivo, escopo e critérios de aceite identificados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+<li>[ ] Linguagens, versões, SDKs e plataformas documentados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+<li>[ ] Arquitetura inicial e integrações mapeadas.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+<li>[ ] Repositório privado e permissões configurados, conforme necessidade.</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+
+<li>[ ] Estratégia de testes e riscos iniciais registrados.</li></ul></div><div class="unit "><h3>Antes de cada merge relevante</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Issue e PR vinculados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Mudança revisada por pessoa distinta.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] CI e testes com evidências verificáveis.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Impactos em contratos, modelos e compatibilidade avaliados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Documentação e ADR atualizados quando necessário.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Uso relevante de IA registrado e revisado.</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Nenhum segredo ou dado restrito foi commitado.</li></ul></div><div class="unit "><h3>Antes de cada release</h3></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Versão SemVer, tag e <code>CHANGELOG.md</code> atualizados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Build e artefatos reproduzíveis e identificados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Smoke tests e homologação aplicável concluídos.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Compatibilidade e limitações explicitadas.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Instalação, suporte e rollback documentados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Responsáveis de desenvolvimento e engenharia deram aceite quando aplicável.</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+
+
+<li>[ ] Apresentação e materiais de demonstração correspondem ao estado real da release.</li></ul></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">15 / 16</span></div></div></section><section class="page content-page" style="--th:#E06C00">
+    <div class="thread"></div><div class="doc-ribbon">STMA / DEVELOPMENT</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Desenvolvimento / Operação / 15</div><div class="doc-name">Desenvolvimento</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><hr></div><div class="unit "><h2>Referências do projeto</h2></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Norma corporativa:</strong> <code>TI-ENG-001-NOR</code>, versão <code>0.1 · Beta</code> (pendente de aprovação).</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>README:</strong> <code>README.md</code>.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Arquitetura:</strong> <code>docs/architecture.md</code>.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Decisões técnicas:</strong> <code>docs/adr/</code>.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Registro de IA:</strong> <code>docs/ai-usage-log.md</code>.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Histórico de versões:</strong> <code>CHANGELOG.md</code>.</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+
+
+<li><strong>Código, issues e PRs:</strong> [Link interno do repositório].</li></ul></div><div class="unit "><p><strong>Regra de manutenção:</strong> este arquivo descreve a implementação real. Sempre que uma mudança afetar linguagem, versão, arquitetura, módulos, contratos, processo de build, operação ou compatibilidade, atualizar o <code>DEVELOPMENT.md</code> <strong>no mesmo pull request</strong>. Divergência entre código e documento deve ser tratada como pendência técnica.</p></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-DEVELOPMENT</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">16 / 16</span></div></div></section></div>
+</body></html>

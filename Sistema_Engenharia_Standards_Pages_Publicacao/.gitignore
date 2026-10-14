@@ -1,0 +1,9 @@
+# Arquivos locais / dados nao publicados
+.DS_Store
+Thumbs.db
+__pycache__/
+*.tmp
+*.bak
+*.log
+.env
+.env.*

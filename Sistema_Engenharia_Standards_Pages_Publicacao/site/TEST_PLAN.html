@@ -1,0 +1,982 @@
+<!DOCTYPE html><html lang="pt-BR" data-ready="true"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>STMA · Plano de testes · TI-ENG-001-NOR</title>
+
+<style>
+
+:root{
+  --paper:#FDFCFA; --sheet:#FFFFFF; --sheet2:#F5F5F3;
+  --ink:#050505; --graphite:#5E646E; --pencil:#8B919A;
+  --rule:#EBEBE8; --rule-strong:#D6D6D2;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:#E8E6E1; color:var(--ink);
+  font-family:"Inter",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased; -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.doc{display:flex;flex-direction:column;align-items:center;gap:18px;padding:26px 14px}
+
+/* A folha é a unidade: 210 × 297 mm, com margem interna de prancha. */
+.page{
+  position:relative; width:210mm; min-height:297mm; background:var(--paper);
+  box-shadow:0 1px 2px rgba(0,0,0,.10),0 12px 30px rgba(0,0,0,.13);
+  overflow:hidden; page-break-after:always; break-after:page;
+}
+.page:last-child{page-break-after:auto;break-after:auto}
+.inner{position:absolute;left:14mm;right:14mm;top:14mm;bottom:24mm;display:flex;flex-direction:column}
+.thread{position:absolute;left:0;top:0;bottom:0;width:3.5mm;background:var(--th,var(--ink))}
+
+/* Carimbo — bloco de identificação da prancha técnica. */
+.carimbo{
+  position:absolute;left:0;right:0;bottom:0;height:18mm;
+  border-top:.4mm solid var(--rule-strong);background:var(--sheet2);
+  display:grid;grid-template-columns:1.7fr 1.1fr 1fr .7fr;
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+}
+.carimbo>div{padding:0 4mm;border-left:.3mm solid var(--rule);
+  display:flex;flex-direction:column;justify-content:center;gap:1mm;min-width:0}
+.carimbo>div:first-child{border-left:0}
+.cl{font-size:6.5pt;letter-spacing:.12em;text-transform:uppercase;color:var(--pencil)}
+.cv{font-size:8.5pt;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-variant-numeric:tabular-nums}
+
+/* Tipografia da folha */
+.p-eyebrow{font-family:"JetBrains Mono",monospace;font-size:7pt;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--th,var(--graphite));margin:0 0 4mm}
+.p-title{font-family:"Instrument Sans",system-ui,sans-serif;font-weight:700;
+  font-size:24pt;line-height:1.06;letter-spacing:-.02em;margin:0 0 4mm;text-wrap:balance}
+.p-sub{font-size:10pt;line-height:1.5;color:var(--graphite);margin:0 0 5mm;max-width:52ch}
+.hr{height:.3mm;background:var(--rule);margin:5mm 0;flex:none}
+.gap{height:6mm}
+.vazio{font-size:9.5pt;color:var(--pencil);font-style:italic;margin:0}
+.nota{font-size:10pt;line-height:1.55;margin:0;max-width:56ch}
+.nota.parecer{border-left:.8mm solid var(--rule-strong);padding-left:4mm}
+
+/* Capa */
+.capa{--th:var(--ink)}
+.capa .inner{bottom:14mm}
+.cover-mark{display:flex;align-items:center;gap:4mm;margin-bottom:auto}
+.logo{width:13mm;height:13mm;filter:invert(1);flex:none}
+.mark-txt{font-family:"Instrument Sans",sans-serif;font-weight:600;font-size:11pt}
+.mark-txt span{display:block;font-family:"JetBrains Mono",monospace;font-weight:400;
+  font-size:7pt;letter-spacing:.16em;color:var(--pencil);text-transform:uppercase;margin-top:1mm}
+.threads{display:flex;gap:1.6mm;margin-bottom:7mm}
+.threads i{height:2mm;flex:1;border-radius:99px;display:block}
+.capa h1{font-family:"Instrument Sans",sans-serif;font-weight:700;font-size:38pt;
+  line-height:.98;letter-spacing:-.035em;margin:0 0 5mm;text-wrap:balance}
+.capa .obra{font-size:13pt;line-height:1.4;color:var(--graphite);margin:0 0 10mm;max-width:34ch}
+.cover-grid{display:grid;grid-template-columns:1fr 1fr;gap:7mm 8mm;margin-top:auto}
+.cg-l{font-family:"JetBrains Mono",monospace;font-size:7pt;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--pencil);margin-bottom:1.5mm}
+.cg-v{font-size:11pt;line-height:1.35;font-weight:500}
+
+/* Ficha e equipe */
+.ficha{display:grid;grid-template-columns:1fr 1fr;border:.3mm solid var(--rule);flex:none}
+.ficha div{padding:4mm;border-bottom:.3mm solid var(--rule);border-right:.3mm solid var(--rule);min-width:0}
+.ficha div:nth-child(2n){border-right:0}
+.f-l{font-family:"JetBrains Mono",monospace;font-size:6.5pt;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--pencil);display:block;margin-bottom:1.5mm}
+.f-v{font-size:10.5pt;font-weight:500;line-height:1.3}
+.equipe{display:flex;flex-direction:column;gap:3.5mm}
+.pessoa{display:flex;align-items:center;gap:4mm}
+.av{width:11mm;height:11mm;border-radius:99px;display:flex;align-items:center;justify-content:center;
+  font-family:"Instrument Sans",sans-serif;font-weight:600;font-size:10pt;color:#fff;flex:none}
+.pn{font-size:10.5pt;font-weight:600;line-height:1.25}
+.pf{font-family:"JetBrains Mono",monospace;font-size:7.5pt;color:var(--graphite);margin-top:.8mm}
+
+/* Fotos */
+.fotos{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+.foto{border:.3mm solid var(--rule);background:var(--sheet);margin:0;
+  break-inside:avoid;page-break-inside:avoid}
+.shot{position:relative;aspect-ratio:4/3;background:var(--sheet2);
+  border-bottom:.3mm solid var(--rule);overflow:hidden}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot .n{position:absolute;left:2.5mm;top:2.5mm;width:7mm;height:7mm;border-radius:99px;
+  background:var(--th,var(--ink));color:#fff;display:flex;align-items:center;justify-content:center;
+  font-family:"JetBrains Mono",monospace;font-size:7.5pt;font-weight:700;z-index:1}
+.semfoto{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:"JetBrains Mono",monospace;font-size:7pt;color:var(--pencil)}
+.fcap{padding:3.5mm}
+.ftit{font-size:9.5pt;font-weight:600;line-height:1.3;margin:0 0 1.5mm}
+.fdesc{font-size:9pt;line-height:1.45;margin:0 0 2.5mm}
+.fck{list-style:none;margin:0 0 2.5mm;padding:0;display:flex;flex-direction:column;gap:1mm}
+.fck li{font-size:8pt;line-height:1.35;color:var(--graphite)}
+.fck li.ok{color:var(--ink)}
+.fmeta{display:flex;flex-wrap:wrap;gap:1mm 3mm;font-family:"JetBrains Mono",monospace;
+  font-size:7pt;color:var(--graphite);font-variant-numeric:tabular-nums}
+.fmeta b{font-weight:500;color:var(--ink)}
+.tag{padding:.6mm 2mm;border-radius:99px;background:var(--sheet2);color:var(--graphite)}
+
+/* Checklist */
+.ck{display:flex;flex-direction:column;border-top:.3mm solid var(--rule)}
+.ck-row{display:grid;grid-template-columns:7mm 1fr auto;gap:3.5mm;padding:3.5mm 0;
+  border-bottom:.3mm solid var(--rule);align-items:start;break-inside:avoid;page-break-inside:avoid}
+.tick{width:7mm;height:7mm;border-radius:50%;background:var(--th,var(--ink));color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:9pt;line-height:1}
+.tick.vazio{background:transparent;border:.4mm solid var(--rule-strong);color:var(--pencil)}
+.ck-t{font-size:10pt;line-height:1.4;font-weight:500}
+.ck-o{font-size:9pt;line-height:1.45;color:var(--graphite);margin-top:1.5mm;
+  padding-left:3mm;border-left:.5mm solid var(--rule-strong)}
+.ck-fotos{display:flex;gap:2mm;margin-top:2.5mm}
+.ck-fotos img{width:22mm;height:17mm;object-fit:cover;border:.3mm solid var(--rule)}
+.ck-w{font-family:"JetBrains Mono",monospace;font-size:7pt;color:var(--graphite);
+  text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.5}
+
+/* Planta */
+.planta{position:relative;border:.3mm solid var(--rule);background:var(--sheet);
+  width:100%;aspect-ratio:4/3;overflow:hidden}
+.planta img{width:100%;height:100%;object-fit:contain;display:block}
+.pin{position:absolute;width:8mm;height:8mm;border-radius:99px;color:#fff;
+  display:flex;align-items:center;justify-content:center;font-family:"JetBrains Mono",monospace;
+  font-size:8pt;font-weight:700;transform:translate(-50%,-50%);
+  box-shadow:0 .3mm 1mm rgba(0,0,0,.35)}
+.legenda{display:grid;grid-template-columns:1fr 1fr;gap:2mm 6mm;margin-top:5mm}
+.lg{display:flex;gap:3mm;align-items:baseline;font-size:9pt;line-height:1.35}
+.lg i{font-family:"JetBrains Mono",monospace;font-size:8pt;font-weight:700;
+  color:var(--th);font-style:normal;flex:none}
+
+/* Encerramento */
+.assina{display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:auto}
+.sig{border-top:.4mm solid var(--ink);padding-top:3mm}
+.sig b{display:block;font-size:10.5pt;font-weight:600}
+.sig span{font-family:"JetBrains Mono",monospace;font-size:7.5pt;color:var(--graphite)}
+
+@media print{
+  @page{size:A4 portrait;margin:0}
+  body{background:#fff}
+  .doc{gap:0;padding:0}
+  .page{box-shadow:none;margin:0;width:210mm;height:297mm;min-height:0}
+}
+
+
+
+/* STMA · complemento de apresentação documental, preservando os tokens e componentes da norma */
+body {overflow-x:hidden}
+.page {height:297mm;min-height:297mm;}
+.page .inner{min-height:0}
+.content-page .inner{top:14mm;bottom:23mm;}
+.document-head{flex:none;padding-bottom:4mm;margin-bottom:4mm;border-bottom:.3mm solid var(--rule-strong)}
+.document-head .doc-kicker{font-family:'JetBrains Mono',monospace;font-size:7pt;color:var(--th);letter-spacing:.13em;text-transform:uppercase;margin-bottom:2mm}
+.document-head .doc-name{font-family:'Instrument Sans',sans-serif;font-size:19pt;font-weight:700;line-height:1.1;letter-spacing:-.025em;margin-bottom:2mm}
+.document-head .doc-description{font-size:8.5pt;color:var(--graphite);margin:0;line-height:1.4}
+.page-body{flex:1;min-height:0;overflow:hidden;font-size:9.0pt;line-height:1.47;color:#23262b}
+.page-body h2{font-family:'Instrument Sans',sans-serif;font-size:15.5pt;line-height:1.16;letter-spacing:-.017em;font-weight:700;margin:4mm 0 3mm;padding-bottom:2mm;border-bottom:.3mm solid var(--rule-strong);color:var(--ink)}
+.page-body h3{font-family:'Instrument Sans',sans-serif;font-size:11.5pt;font-weight:700;line-height:1.3;margin:3.2mm 0 2mm;color:var(--ink)}
+.page-body h4{font-family:'Instrument Sans',sans-serif;font-size:10pt;font-weight:650;margin:2.8mm 0 1.6mm;color:var(--ink)}
+.page-body h5{font-family:'Instrument Sans',sans-serif;font-size:9.5pt;font-weight:600;margin:2.5mm 0 1.4mm;color:var(--ink)}
+.page-body p{margin:0 0 2.5mm;line-height:1.48;overflow-wrap:anywhere}
+.page-body strong{font-weight:650;color:var(--ink)}
+.page-body a{color:#56409c;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
+.page-body blockquote{border-left:.85mm solid var(--th);background:var(--sheet2);padding:3.0mm 3.4mm;margin:1.5mm 0 3.2mm;color:#454a52}
+.page-body blockquote p{font-size:8.65pt;margin:0 0 1mm}
+.page-body blockquote p:last-child{margin-bottom:0}
+.page-body hr{border:0;border-top:.3mm solid var(--rule-strong);margin:3mm 0}
+.page-body .md-list{padding-left:5mm;margin:0 0 1.7mm;}
+.page-body .md-list li{padding-left:.7mm;margin:0;font-size:8.75pt;line-height:1.42}
+.page-body .md-list li p{margin:0}
+.page-body .md-list li ul,.page-body .md-list li ol{margin:1mm 0}
+.page-body .md-list ul{list-style:circle}
+.page-body .md-list ol{list-style:decimal}
+.page-body .data-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:0 0 1.8mm;background:white;max-width:100%;}
+.page-body .data-table th,.page-body .data-table td{border:.28mm solid var(--rule-strong);text-align:left;vertical-align:top;padding:2mm 2.3mm;font-size:7.6pt;line-height:1.34;overflow-wrap:anywhere;word-break:normal}
+.page-body .data-table th{background:var(--sheet2);font-family:'Inter',sans-serif;font-size:7.2pt;font-weight:700;color:#414650}
+.page-body .data-table td code{font-size:7.2pt}
+.page-body .data-table p{margin:0 0 1mm;font-size:7.5pt;line-height:1.35}
+.page-body .data-table p:last-child{margin-bottom:0}
+.page-body .data-table ul{margin:0;padding-left:4mm}
+.page-body code:not(pre code){background:#F0F0EE;padding:.22mm .95mm;border-radius:1mm;font-family:'JetBrains Mono',monospace;font-size:.9em;overflow-wrap:anywhere}
+.page-body .code-wrap{margin:0 0 3mm;border:.3mm solid var(--rule-strong);background:#F5F5F3;}
+.page-body .code-head{border-bottom:.3mm solid var(--rule-strong);padding:1.8mm 3mm;font:7pt 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--graphite);display:flex;justify-content:space-between}
+.page-body pre{margin:0;padding:3mm;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;tab-size:2;font-family:'JetBrains Mono',monospace;font-size:7.2pt;line-height:1.42;color:#20242a}
+.page-body pre code{font:inherit;background:transparent;padding:0}
+.page-body .mermaid-hint{padding:1.8mm 3mm;font-size:7pt;color:var(--graphite);border-top:.3mm solid var(--rule)}
+.page-body .section-index{font:7pt 'JetBrains Mono',monospace;color:var(--th);letter-spacing:.04em}
+.page-body .unit{margin:0;padding:0;break-inside:avoid;}
+.page-body .unit ul, .page-body .unit ol{margin-top:0;}
+.page-body .unit.last-list{margin-bottom:2mm}
+.page-body .unit.table-start table{margin-top:1mm}
+.page-body .unit.is-table:not(.table-start) table thead{display:none}
+.page-body .unit.is-table:not(.table-start) table{margin-top:-1.8mm}
+.page-body .unit.is-table:not(.table-start) table td{border-top:0}
+.cover-category{font-family:'JetBrains Mono',monospace;font-size:7pt;letter-spacing:.16em;color:var(--graphite);text-transform:uppercase;margin:0 0 2mm}
+.capa .cover-subtitle{color:#535b65;font-size:12.2pt;line-height:1.42;margin:0 0 6mm;max-width:42ch}
+.capa h1{font-size:37pt}
+.capa .cover-note{border-left:.8mm solid var(--rule-strong);padding-left:3mm;margin:0 0 7mm;font-size:9pt;line-height:1.45;color:#626873;max-width:46ch}
+.capa .cover-grid{margin-top:0}
+.capa .cover-mid{margin-top:auto;margin-bottom:auto;}
+.doc-ribbon{position:absolute;right:14mm;top:14mm;font-family:'JetBrains Mono',monospace;font-size:6.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--graphite)}
+.preview-nav{position:fixed;top:18px;right:22px;display:flex;gap:8px;z-index:30}
+.preview-nav button{font:12px Inter,sans-serif;background:#17191d;color:white;padding:10px 14px;border:0;border-radius:6px;cursor:pointer;box-shadow:0 2px 14px #0002}
+.preview-nav button.secondary{background:white;color:#111;border:1px solid #ddd}
+@media print{.preview-nav{display:none!important} .page{height:297mm;min-height:297mm;} }
+@media screen and (max-width:850px){.doc{align-items:flex-start;overflow:auto}.preview-nav{right:8px;top:8px}}
+</style><style id="stma-pages-navigation">
+.stma-pages-nav{position:fixed;top:16px;right:16px;z-index:9999;padding:10px 15px;
+background:#050505;color:#fff;font:600 12px/1.2 system-ui,sans-serif;text-decoration:none;
+border-radius:7px;box-shadow:0 3px 13px #0002;transition:opacity .2s}
+.stma-pages-nav:hover{opacity:.84}
+@media print{.stma-pages-nav{display:none!important}}
+@media(max-width:840px){.stma-pages-nav{top:8px;right:8px;padding:8px 10px;font-size:11px}}
+</style></head><body>
+<a class="stma-pages-nav" href="index.html" aria-label="Voltar à biblioteca STMA">← Biblioteca STMA</a>
+<div class="doc"><section class="page capa" style="--th:#1A994C"><div class="inner">
+      <div class="cover-mark"><img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAQACAYAAAB/HSuDAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAACAASURBVHic7N1rlNXVfTfwfWaGywAjoAJyMYANUVO8oti1Wi9NTROTVq1NWl01Wa4mxmqW4qXWxGBLbURrvdVqTDVpVhOtWmutxmrULhOz0kYNRryQWNJ4AQXUCnIZLgPMeV48Pj4qIMNwzvz2/+zP513y6vvCNZz9Pd+9Ty2lVE8AAABAS2uLDgAAAAA0nwIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAIoAAAAAKAACgAAAAAogAIAAAAACqAAAAAAgAJ0RAcAAOD/u/LKK9PG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AABQCJN/gMZ6+eWX03777ZfefPPN6CjQJwoAWkJXV1d0BIAs1ev1tGDBgrTLLrukUaNGRccBqLyNGzemzZs3pzFjxqQ1a9ZEx4EdogCgstra2tKpp56a/uzP/izttdde0XEAeI/e3t7oCAANc/bZZ6d77703rVq1Kr3xxhvRcaBfFABU0uOPP54OPfTQ6BgAbMVv//Zvp9WrV6dHH300OgoA8A4eAaRSvv71r6d6ve7wD5ChE044IdVqtfTQQw85/ANAhiwAqITOzs60du3a6BgAvMeDDz6YHnjggXTVVVdFRwEAtsMCgOydd955Dv8AmbnzzjvTAQcckD72sY85/ANARVgAkLVrrrkmzZo1KzoGAO8wZsyY9L//+7/RMQCAHaQAIFvXXnttOvPMM6NjAPCW3t7eNHLkSD97BQAVVUsp1aNDwHsNHz7cB0yAzAwbNiytW7cuOgYA0E/eACBLDv8AeXn88ccd/gGg4hQAZOe6666LjgDAexx22GHREQCAneQKANlZvXp1GjFiRHQMAN4yefLktGjRougYAMBOsgAgOw7/APn4z//8T4d/AGgRCgCy8uMf/zg6AgBv+f73v59+4zd+IzoGANAgCgCy0tPTEx0BgLcO/x/5yEeiYwAADeQNALKycOHCNG3atOgYAMWr1WrREQCABrMAICsO/wDxDj744OgIAEATWACQlXrdf44AkV588cU0derU6BgAQBNYAAAAbzv22GOjIwAATWIBQFYsAADirFmzJnV1dUXHAACaxAIAAEirV69OI0eOjI4BADSRAgAACrd06dK0yy67pN7e3ugoAEATKQAAoHBnnHFGdAQAYAB4A4CseAMAYGAtXrw4TZ482d9fACiABQAAFOyaa65x+AeAQlgAkBUfQgEGzp133pk+9alPRccAAAaIAoCsKAAABk6tVouOAAAMIFcAAKBAc+bMiY4AAAywjugAAMDAOv/889MVV1wRHQMAGGCuAJAVVwAAms/0HwDK5AoAABSkq6srOgIAEEQBAACFmD17dlqzZk10DAAgiCsAZMUVAIDmqNfrafz48enVV1+NjgIABLEAAIACfOtb33L4B4DCWQCQFQsAgMa77bbb0kknnRQdAwAIpgAgKwoAgMa6++670/HHHx8dAwDIgAKArCgAABpn/vz56aCDDoqOAQBkQgFAVhQAAI0zZMiQ1NPT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vsM/0GcdHR3ppptuio4B72IBQFYsAIBmuuaaa9I555wTHYOK+cUvfpE++MEPRscAKmjlypVp1KhR0THgbQoAsqIAAJppr732Si+88EJ0DCrk5z//edpnn32iYwAV5jFAcuIKAAAt78Ybb0yTJk1y+KfPPvWpT6V6ve7wD0BLsQAgKxYAQKPdcsst6eSTT46OQYX8zu/8Tvrud78bHQNoERYA5EQBQFYUAEAj9fb2pt122y29+eab0VGoiI6OjrRx48boGEALUQCQk47oAADQDBs3bkzDhw93mGOHLFmyJDoCADSNAgCAltPT05Mef/xxh392yD777JPGjBkTHQMAmsYVALLiCgCws3p7e1NXV1dau3ZtdBQqZPr06enpp5821QUazt8VcuJXAABoGTfddFNqb293+GeHHHrooemZZ57xIR2AlqcAAKAlXHfddekLX/hCdAwq5ogjjkiPP/54dAwAGBCuAJAVVwCA/vjsZz+bvvOd70THoIL8uwM0m3URObEAICs/+MEPoiMAFfI3f/M3afTo0Q7/9MuXv/zl6AgAMKD8CgBZGTp0aHQEoAJuvPHGdNppp0XHoMIOOeSQNHfu3OgYADCgXAEgO+aYwLasWLEi7brrrtExaAH+rQEGiisA5MQVALJz2223RUcAMnT22Wc7/NMQ//Vf/xUdAQBCWACQJd/MAP/PG2+8kS688MJ04403RkehBTz55JPpwAMPjI4BFMQCgJxYAJClK664IjoCEGzt2rXp6KOPTuPHj3f4pyFGjhzp8A9A0TwCSJbOP//81N3dnf7iL/4iOgowgOr1elq6dGk6/PDD06JFi9KmTZuiI9Eidtlll7R8+fLoGAAQSgFAtubMmZN6enrSJZdcEh0FGACHHnpomjdvXnQMWtTdd9+d2toMHwEom38JydrcuXPT7Nmzo2MATXTHHXekAw880OGfppk4cWI66qijomMAQDiPAFIJF198cbrooouiYwANdu6556arr746OgYtbNy4cWnZsmXRMYCCeQSQnCgAqIy5c+emc889Nw0ZMiQ6CrCDli1blm699da3//df/uVfppUrV4Zmogx+VQaIpgAgJwoAKmfu3Lnpc5/7XBo7dmx0FGAb7rjjjjR06NB07LHHRkehYNdee20688wzo2MAhVMAkBMFAJV11llnpb/927+NjgGklH784x+nlFL6xCc+kd58883oOJDOPvts10uALCgAyIkCgMp7+eWXU61WSxMmTIiOAsX45S9/mWq1WrrvvvvSWWedZWZNdvw3CeRCAUBO/AwglTdp0qTU3t6eOjs7o6NAMdasWRMdAbZp7ty50REAIEsWAABAS+np6UmDBg2KjgGQkgUAmWmLDgAA0Chz5851+AeAbXAFAABoCZdddlm64IILomMAQLYsAACACotzMAAAGSJJREFUyvurv/orh38A2A5vAAAAlTZ48OC0dOnStOuuu0ZHAdiCNwDIiQUAAFBpJ554osM/APSBBQAAUGnLly9Po0ePjo4BsFUWAOTEAgAAqKyOjo7U3t4eHQMAKkEBAABU1rhx49Iuu+wSHQMAKsEVAACgspYuXZr22GOP6BgA2+QKADmxAAAAKunFF190+AeAHaAAAAAq5+c//3maPHlydAwAqBQFAABQKfPnz0/77LNPdAwAqBwFAABQGV/96lfTAQccEB0DACrJI4AAQCX8+q//evrRj34UHQNgh3gEkJxYAAAAlfDVr341OgIAVFpHdAAAgO154okn0sEHHxwdAwAqTQEAAGSrVqulBQsWpH333Tc6CgBUnjcAAIBs7brrrumNN96IjgHQb94AICfeAAAAsrTbbrul119/PToGALQMBQAAkKW77747tbX5qAIAjeIKAACQnd133z0tW7Ystbe3R0cB2CmuAJATBQAAkJ163ccToDUoAMiJXR0AkJUjjjgiOgIAtCQLAAAgGxMmTEivvPJKdAyAhrEAICcWAABANk4//fToCADQsiwAAIAsfPnLX05z586NjgHQUBYA5EQBAABkwcN/QCtSAJATVwAAgHCXXXZZdAQAaHkWAABAON/+A63KAoCcWAAAAKHefPPN6AgAUAQFAAAQor29Pa1evTqNHDkyOgoAFEEBAACE+OIXv5hGjBgRHQMAiuENAABgwH3uc59L3/jGN6JjADSdNwDIiQIAABhQQ4cOTcuXL0+dnZ3RUQCaTgFATlwBAAAG1OGHH+7wDwABLAAAgAHT1taWNm3a5BsxoBj+3pETCwAAYMAcfvjhPgwDQBALAABgwNTrPnYAZVF6khMLAABgQCxcuDA6AgAUTQEAADTds88+m6ZNmxYdAwCKpgAAAJrq6quvTr/6q78aHQMAiucNAACgqdz7B0rmDQByYgEAADTNv/7rv0ZH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AAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQAABAAAAAAIIAAAAABBAAAAAAIAAAgAAAAAEEAAAAAAggAAAAAAAAQQAAAAACCAAAAAAQIC/AIlqE/aAKuqpAAAAAElFTkSuQmCC" alt="Marca Sistema Engenharia"><div class="mark-txt">Sistema Engenharia<span>STMA · Tecnologia e Automação</span></div></div>
+      <div class="cover-mid"><div class="threads"><i style="background:#1A994C"></i><i style="background:#D63C30"></i><i style="background:#E06C00"></i><i style="background:#6B4FC8"></i></div><p class="cover-category">STMA · Engenharia, automação &amp; software</p>
+      <p class="p-eyebrow">Qualidade / Validação · Documento-modelo</p>
+      <h1>Plano de testes<br>&amp; homologação</h1><p class="cover-subtitle">Ensaios técnicos · Evidências · Aceite</p>
+      <p class="cover-note">Documento padronizado para apresentações e registros internos. Os campos de exemplo devem ser preenchidos e revisados antes de qualquer aprovação ou divulgação.</p>
+      <div class="cover-grid">
+      <div><div class="cg-l">Norma de referência</div><div class="cg-v">TI-ENG-001-NOR</div></div>
+      <div><div class="cg-l">Identificador do modelo</div><div class="cg-v">STMA-TEST_PLAN</div></div>
+      <div><div class="cg-l">Versão do kit</div><div class="cg-v">0.1 · Beta</div></div>
+      <div><div class="cg-l">Emissão</div><div class="cg-v">14 outubro 2026</div></div>
+      <div><div class="cg-l">Aplicação</div><div class="cg-v">Projetos STMA</div></div>
+      <div><div class="cg-l">Aprovação da norma</div><div class="cg-v">Pendente · liderança</div></div>
+      </div></div>
+      </div></section><section class="page content-page" style="--th:#1A994C">
+    <div class="thread"></div><div class="doc-ribbon">STMA / TEST_PLAN</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Qualidade / Validação / 01</div><div class="doc-name">Plano de testes</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><blockquote>
+<p><strong>Tipo:</strong> Estratégia de verificação de software e validação técnica<br>
+<strong>Norma de referência:</strong> <code>TI-ENG-001-NOR</code> · versão de referência <code>0.1 Beta</code> · <strong>pendente de aprovação formal</strong><br>
+<strong>Estado deste arquivo:</strong> TEMPLATE. <strong>Casos previstos não são testes executados.</strong></p>
+</blockquote></div><div class="unit "><h2>Controle documental</h2></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead><tbody><tr>
+<td>Projeto</td>
+<td><code>[PREENCHER]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead><tbody><tr>
+<td>Repositório</td>
+<td><code>stma-[nomedoplugin]-[plataforma]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead><tbody><tr>
+<td>Documento / revisão</td>
+<td><code>TEST_PLAN.md / 0.1.0</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead><tbody><tr>
+<td>Versão do software sob teste</td>
+<td><code>[tag e SHA]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead><tbody><tr>
+<td>Plataforma/host/SDK</td>
+<td><code>[versão/Não aplicável]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead><tbody><tr>
+<td>Ambiente de execução</td>
+<td><code>[SO, arquitetura, serviços, configurações]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead><tbody><tr>
+<td>Responsável por QA</td>
+<td><code>[PREENCHER]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead><tbody><tr>
+<td>Responsável por validação de engenharia</td>
+<td><code>[PREENCHER / Não aplicável]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead><tbody><tr>
+<td>Emissão e última execução</td>
+<td><code>[AAAA-MM-DD]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead><tbody><tr>
+<td>Situação</td>
+<td><code>Planejado / Em execução / Concluído / Bloqueado</code></td>
+</tr></tbody></table></div><div class="unit "><h2>1. Objetivo, escopo e referências</h2></div><div class="unit "><p><strong>Objetivo da campanha:</strong> <code>[que resultado e riscos serão avaliados]</code>.</p></div><div class="unit "><p><strong>Incluído:</strong> <code>[features, módulos, integrações, dados, versões]</code>.</p></div><div class="unit "><p><strong>Não incluído:</strong> <code>[cenários e motivo; registrar risco residual]</code>.</p></div><div class="unit "><p><strong>Referências:</strong> <code>PROJECT_BRIEF.md</code> (requisitos e aceite), <code>ARCHITECTURE.md</code> (fluxos e invariantes), <code>DEVELOPMENT.md</code> (comandos), issues/PRs e normas de engenharia aplicáveis.</p></div><div class="unit "><h2>2. Estratégia de testes por camada</h2></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Verifica</th>
+<th>Técnica / ferramenta</th>
+<th>Quando roda</th>
+<th>Responsável</th>
+</tr>
+</thead><tbody><tr>
+<td>Estáticos</td>
+<td>lint, formatação, tipagem, padrões</td>
+<td><code>[stack/CI]</code></td>
+<td><code>Todo PR</code></td>
+<td><code>[nome]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Verifica</th>
+<th>Técnica / ferramenta</th>
+<th>Quando roda</th>
+<th>Responsável</th>
+</tr>
+</thead><tbody><tr>
+<td>Unitários</td>
+<td>regras e transformações puras</td>
+<td><code>[framework]</code></td>
+<td><code>Todo PR</code></td>
+<td><code>[nome]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Verifica</th>
+<th>Técnica / ferramenta</th>
+<th>Quando roda</th>
+<th>Responsável</th>
+</tr>
+</thead><tbody><tr>
+<td>Integração</td>
+<td>interfaces, persistência, SDK e serviços</td>
+<td><code>[harness]</code></td>
+<td><code>[PR/build]</code></td>
+<td><code>[nome]</code></td>
+</tr></tbody></table></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-TEST_PLAN</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">02 / 06</span></div></div></section><section class="page content-page" style="--th:#1A994C">
+    <div class="thread"></div><div class="doc-ribbon">STMA / TEST_PLAN</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Qualidade / Validação / 02</div><div class="doc-name">Plano de testes</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit is-table table-start"><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Verifica</th>
+<th>Técnica / ferramenta</th>
+<th>Quando roda</th>
+<th>Responsável</th>
+</tr>
+</thead><tbody><tr>
+<td>Sistema/E2E</td>
+<td>jornadas em ambiente equivalente ao real</td>
+<td><code>[ferramenta]</code></td>
+<td><code>[critério]</code></td>
+<td><code>[nome]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Verifica</th>
+<th>Técnica / ferramenta</th>
+<th>Quando roda</th>
+<th>Responsável</th>
+</tr>
+</thead><tbody><tr>
+<td>Host real (engenharia)</td>
+<td>funcionalidade dentro de Revit/AutoCAD/etc.</td>
+<td><code>[manual/automação in-host]</code></td>
+<td><code>Antes do release aplicável</code></td>
+<td><code>[nome]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Verifica</th>
+<th>Técnica / ferramenta</th>
+<th>Quando roda</th>
+<th>Responsável</th>
+</tr>
+</thead><tbody><tr>
+<td>Regressão</td>
+<td>não romper funcionalidades existentes</td>
+<td><code>[suite/cenários]</code></td>
+<td><code>PR/release</code></td>
+<td><code>[nome]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Verifica</th>
+<th>Técnica / ferramenta</th>
+<th>Quando roda</th>
+<th>Responsável</th>
+</tr>
+</thead><tbody><tr>
+<td>Segurança</td>
+<td>entradas, permissões, segredos, dependências</td>
+<td><code>[análise/scan]</code></td>
+<td><code>[critério]</code></td>
+<td><code>[nome]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Camada</th>
+<th>Verifica</th>
+<th>Técnica / ferramenta</th>
+<th>Quando roda</th>
+<th>Responsável</th>
+</tr>
+</thead><tbody><tr>
+<td>Desempenho</td>
+<td>tempo, memória, escala, degradação</td>
+<td><code>[benchmark e dataset]</code></td>
+<td><code>[critério]</code></td>
+<td><code>[nome]</code></td>
+</tr></tbody></table></div><div class="unit "><p><strong>Regra de evidência:</strong> compilar com sucesso não equivale a teste funcional; testes isolados de algoritmos, grafos e dados sintéticos não provam funcionamento dentro da UI do host. Declarar cada etapa separadamente.</p></div><div class="unit "><h2>3. Ambiente e dados de teste</h2></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Elemento</th>
+<th>Definição / versão exata</th>
+<th>Proveniência / link</th>
+</tr>
+</thead><tbody><tr>
+<td>Commit do build</td>
+<td><code>[SHA]</code></td>
+<td><code>[URL]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Elemento</th>
+<th>Definição / versão exata</th>
+<th>Proveniência / link</th>
+</tr>
+</thead><tbody><tr>
+<td>SO / arquitetura</td>
+<td><code>[versão / x64, etc.]</code></td>
+<td><code>[URL]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Elemento</th>
+<th>Definição / versão exata</th>
+<th>Proveniência / link</th>
+</tr>
+</thead><tbody><tr>
+<td>Runtime e dependências</td>
+<td><code>[versões]</code></td>
+<td><code>[lockfile / build]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Elemento</th>
+<th>Definição / versão exata</th>
+<th>Proveniência / link</th>
+</tr>
+</thead><tbody><tr>
+<td>Software hospedeiro</td>
+<td><code>[Revit/AutoCAD e ano ou N/A]</code></td>
+<td><code>[licença/ambiente]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Elemento</th>
+<th>Definição / versão exata</th>
+<th>Proveniência / link</th>
+</tr>
+</thead><tbody><tr>
+<td>SDK/API</td>
+<td><code>[versão]</code></td>
+<td><code>[URL]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Elemento</th>
+<th>Definição / versão exata</th>
+<th>Proveniência / link</th>
+</tr>
+</thead><tbody><tr>
+<td>Banco / serviços</td>
+<td><code>[ambiente não produtivo]</code></td>
+<td><code>[configuração]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Elemento</th>
+<th>Definição / versão exata</th>
+<th>Proveniência / link</th>
+</tr>
+</thead><tbody><tr>
+<td>Dataset / modelo teste</td>
+<td><code>[nome + hash/versão]</code></td>
+<td><code>[repositório controlado]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Elemento</th>
+<th>Definição / versão exata</th>
+<th>Proveniência / link</th>
+</tr>
+</thead><tbody><tr>
+<td>Configuração</td>
+<td><code>[perfil testado, sem segredos]</code></td>
+<td><code>[link]</code></td>
+</tr></tbody></table></div><div class="unit "><p><strong>Política dos dados:</strong> usar modelos de teste autorizados, sintéticos ou anonimizados conforme classificação; não inserir documentos de clientes ou dados pessoais em evidências de amplo acesso.</p></div><div class="unit "><h3>Matriz de compatibilidade</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Plataforma</th>
+<th>Versão</th>
+<th>Build</th>
+<th>Execução no host</th>
+<th>Homologação</th>
+<th>Observações</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[plataforma]</code></td>
+<td><code>[versão]</code></td>
+<td><code>Não executado</code></td>
+<td><code>Não executado / N/A</code></td>
+<td><code>Pendente</code></td>
+<td><code>[detalhe]</code></td>
+</tr></tbody></table></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-TEST_PLAN</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">03 / 06</span></div></div></section><section class="page content-page" style="--th:#1A994C">
+    <div class="thread"></div><div class="doc-ribbon">STMA / TEST_PLAN</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Qualidade / Validação / 03</div><div class="doc-name">Plano de testes</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><h2>4. Rastreabilidade requisitos → teste → evidência</h2></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Requisito</th>
+<th>Critério de aceite</th>
+<th>Caso(s) de teste</th>
+<th>Resultado</th>
+<th>Evidência</th>
+<th>Issue/PR</th>
+</tr>
+</thead><tbody><tr>
+<td><code>RF-001</code></td>
+<td><code>CA-001</code></td>
+<td><code>CT-001</code></td>
+<td><code>Não executado</code></td>
+<td><code>[link pendente]</code></td>
+<td><code>[link]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Requisito</th>
+<th>Critério de aceite</th>
+<th>Caso(s) de teste</th>
+<th>Resultado</th>
+<th>Evidência</th>
+<th>Issue/PR</th>
+</tr>
+</thead><tbody><tr>
+<td><code>RNF-001</code></td>
+<td><code>CA-002</code></td>
+<td><code>CT-002</code></td>
+<td><code>Não executado</code></td>
+<td><code>[link pendente]</code></td>
+<td><code>[link]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Requisito</th>
+<th>Critério de aceite</th>
+<th>Caso(s) de teste</th>
+<th>Resultado</th>
+<th>Evidência</th>
+<th>Issue/PR</th>
+</tr>
+</thead><tbody><tr>
+<td><code>RE-001</code></td>
+<td><code>CA-003</code></td>
+<td><code>CT-003</code></td>
+<td><code>Não executado</code></td>
+<td><code>[link pendente]</code></td>
+<td><code>[link]</code></td>
+</tr></tbody></table></div><div class="unit "><p><strong>Regras:</strong> nenhum requisito obrigatório deve ser dado como validado sem teste/evidência ou exceção explicitamente aceita pelo responsável competente. Regras técnicas e resultados de engenharia exigem revisão da disciplina correspondente.</p></div><div class="unit "><h2>5. Catálogo de casos de teste</h2></div><div class="unit "><h3>CT-001 — <code>[nome e cenário]</code></h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Categoria</td>
+<td><code>Unitário / Integração / Sistema / Host / Regressão / Segurança / Performance</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Requisito e aceite</td>
+<td><code>RF-001 / CA-001</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Prioridade / risco</td>
+<td><code>Crítico / Alto / Médio / Baixo</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Ambiente e dataset</td>
+<td><code>[versões, modelo, dados, hash]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Pré-condições</td>
+<td><code>[estado inicial]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Passos</td>
+<td><code>1. [ação]  2. [ação]  3. [ação]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Resultado esperado</td>
+<td><code>[saída mensurável, tolerância/unidade, estado final]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Resultado observado</td>
+<td><code>[PREENCHER SOMENTE APÓS EXECUÇÃO]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Estado</td>
+<td><code>Não executado / Aprovado / Reprovado / Bloqueado / Não aplicável</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Evidência</td>
+<td><code>[log, print, vídeo, relatório CI, commit]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Executor / data</td>
+<td><code>[nome / AAAA-MM-DD HH:mm TZ]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Campo</th>
+<th>Registro</th>
+</tr>
+</thead><tbody><tr>
+<td>Defeito associado</td>
+<td><code>[issue / N/A]</code></td>
+</tr></tbody></table></div><div class="unit "><p><strong>Casos complementares obrigatórios conforme risco:</strong> entrada vazia/inválida, grande volume, repetição da operação, interrupção parcial, ausência de conexão, diferenças de versão, permissões insuficientes, arquivos corrompidos, não alteração de elementos não selecionados e preservação de dados anteriores.</p></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-TEST_PLAN</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">04 / 06</span></div></div></section><section class="page content-page" style="--th:#1A994C">
+    <div class="thread"></div><div class="doc-ribbon">STMA / TEST_PLAN</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Qualidade / Validação / 04</div><div class="doc-name">Plano de testes</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><h3>CT-002 — <code>[nome e cenário]</code></h3></div><div class="unit "><p>Replicar a ficha CT-001 para cada cenário significativo e usar IDs únicos. O ID do teste deve ser estável entre campanhas.</p></div><div class="unit "><h2>6. Testes específicos de integração com engenharia</h2></div><div class="unit "><p>Preencher para plugins/automação de modelagem. Quando não aplicável, registrar motivo.</p></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Categoria</th>
+<th>Cenário a avaliar</th>
+<th>Resultado esperado</th>
+<th>Caso/evidência</th>
+</tr>
+</thead><tbody><tr>
+<td>Host real</td>
+<td>Abrir comando e operar na versão homologada</td>
+<td><code>[critério]</code></td>
+<td><code>[CT/link]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Categoria</th>
+<th>Cenário a avaliar</th>
+<th>Resultado esperado</th>
+<th>Caso/evidência</th>
+</tr>
+</thead><tbody><tr>
+<td>Unidades</td>
+<td>Conversão entre unidades internas e de exibição</td>
+<td><code>[valor e tolerância]</code></td>
+<td><code>[CT/link]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Categoria</th>
+<th>Cenário a avaliar</th>
+<th>Resultado esperado</th>
+<th>Caso/evidência</th>
+</tr>
+</thead><tbody><tr>
+<td>Geometria / coordenadas</td>
+<td>Transformações e orientação</td>
+<td><code>[critério]</code></td>
+<td><code>[CT/link]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Categoria</th>
+<th>Cenário a avaliar</th>
+<th>Resultado esperado</th>
+<th>Caso/evidência</th>
+</tr>
+</thead><tbody><tr>
+<td>Elementos e parâmetros</td>
+<td>Seleção, escrita e integridade</td>
+<td><code>[critério]</code></td>
+<td><code>[CT/link]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Categoria</th>
+<th>Cenário a avaliar</th>
+<th>Resultado esperado</th>
+<th>Caso/evidência</th>
+</tr>
+</thead><tbody><tr>
+<td>Transações e undo</td>
+<td>Falha intermediária, rollback e desfazer</td>
+<td><code>[sem estado parcial não autorizado]</code></td>
+<td><code>[CT/link]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Categoria</th>
+<th>Cenário a avaliar</th>
+<th>Resultado esperado</th>
+<th>Caso/evidência</th>
+</tr>
+</thead><tbody><tr>
+<td>Repetibilidade</td>
+<td>Rodar duas vezes no mesmo modelo</td>
+<td><code>[sem duplicidade indevida]</code></td>
+<td><code>[CT/link]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Categoria</th>
+<th>Cenário a avaliar</th>
+<th>Resultado esperado</th>
+<th>Caso/evidência</th>
+</tr>
+</thead><tbody><tr>
+<td>Modelos diversos</td>
+<td>Pequeno, grande, incompleto e legado</td>
+<td><code>[critério]</code></td>
+<td><code>[CT/link]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Categoria</th>
+<th>Cenário a avaliar</th>
+<th>Resultado esperado</th>
+<th>Caso/evidência</th>
+</tr>
+</thead><tbody><tr>
+<td>Engenharia</td>
+<td>Correção do resultado pela disciplina</td>
+<td><code>[parecer técnico]</code></td>
+<td><code>[CT/link]</code></td>
+</tr></tbody></table></div><div class="unit "><h2>7. Automação, CI e execução local</h2></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Comando ou job</th>
+<th>Objetivo</th>
+<th>Resultado esperado</th>
+<th>Evidência</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[comando real de build]</code></td>
+<td>Compilação</td>
+<td><code>Exit code 0; warnings analisados</code></td>
+<td><code>[CI/log]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Comando ou job</th>
+<th>Objetivo</th>
+<th>Resultado esperado</th>
+<th>Evidência</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[comando real de testes]</code></td>
+<td>Suite automatizada</td>
+<td><code>[N testes / critério]</code></td>
+<td><code>[CI/log]</code></td>
+</tr></tbody></table></div><div class="unit is-table "><table class="data-table"><thead>
+<tr>
+<th>Comando ou job</th>
+<th>Objetivo</th>
+<th>Resultado esperado</th>
+<th>Evidência</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[comando real de lint]</code></td>
+<td>Estáticos</td>
+<td><code>[sem violações bloqueantes]</code></td>
+<td><code>[CI/log]</code></td>
+</tr></tbody></table></div><div class="unit "><p><strong>Não inventar comandos:</strong> copiar somente comandos efetivamente testados, preferencialmente os documentados no <code>DEVELOPMENT.md</code>.</p></div><div class="unit "><p><strong>Condição de bloqueio:</strong> teste essencial falhou, regressão confirmada, ausência de validação no host exigida ou problema de segurança crítico → bloquear merge/release até correção ou exceção emergencial formalmente justificada.</p></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-TEST_PLAN</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">05 / 06</span></div></div></section><section class="page content-page" style="--th:#1A994C">
+    <div class="thread"></div><div class="doc-ribbon">STMA / TEST_PLAN</div><div class="inner">
+    <div class="document-head"><div class="doc-kicker">Qualidade / Validação / 05</div><div class="doc-name">Plano de testes</div>
+    <p class="doc-description">TI-ENG-001-NOR · Modelo de documentação · 0.1 Beta · Preenchimento sujeito a revisão</p></div>
+    <div class="page-body"><div class="unit "><h2>8. Execuções e resultados da campanha</h2></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Execução</th>
+<th>Data/hora/fuso</th>
+<th>Commit / build</th>
+<th>Ambiente</th>
+<th>Total</th>
+<th>Passou</th>
+<th>Falhou</th>
+<th>Bloqueado</th>
+<th>Executor</th>
+<th>Relatório</th>
+</tr>
+</thead><tbody><tr>
+<td><code>RUN-001</code></td>
+<td><code>[PREENCHER]</code></td>
+<td><code>[SHA]</code></td>
+<td><code>[ambiente]</code></td>
+<td><code>[N]</code></td>
+<td><code>[N]</code></td>
+<td><code>[N]</code></td>
+<td><code>[N]</code></td>
+<td><code>[nome]</code></td>
+<td><code>[URL]</code></td>
+</tr></tbody></table></div><div class="unit "><h3>Não conformidades e defeitos</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>ID do defeito</th>
+<th>Caso</th>
+<th>Severidade</th>
+<th>Reprodução</th>
+<th>Responsável</th>
+<th>Estado</th>
+<th>PR corretiva</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[issue]</code></td>
+<td><code>CT-001</code></td>
+<td><code>Crítica / Alta / Média / Baixa</code></td>
+<td><code>[passos/evidência]</code></td>
+<td><code>[nome]</code></td>
+<td><code>[status]</code></td>
+<td><code>[link]</code></td>
+</tr></tbody></table></div><div class="unit "><h3>Testes não executados ou limitados</h3></div><div class="unit is-table table-start "><table class="data-table"><thead>
+<tr>
+<th>Caso</th>
+<th>Motivo</th>
+<th>Risco residual</th>
+<th>Responsável pela decisão</th>
+<th>Ação e prazo</th>
+</tr>
+</thead><tbody><tr>
+<td><code>[CT]</code></td>
+<td><code>[host indisponível, licença, ambiente, prazo]</code></td>
+<td><code>[impacto]</code></td>
+<td><code>[nome]</code></td>
+<td><code>[issue/data]</code></td>
+</tr></tbody></table></div><div class="unit "><h2>9. Gate de homologação e aprovação</h2></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+
+<li>[ ] Requisitos obrigatórios têm casos com evidência verificável.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+
+<li>[ ] CI e testes obrigatórios aprovados na revisão avaliada.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+
+<li>[ ] Falhas críticas/altas corrigidas ou bloqueio/decisão formal registrados.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+
+<li>[ ] Compatibilidade verificada nas versões declaradas, sem inferência.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+
+<li>[ ] Execução no host real registrada <strong>quando necessária</strong>.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+
+<li>[ ] Validação da disciplina de engenharia realizada <strong>quando necessária</strong>.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+
+<li>[ ] Riscos de dados, rollback e operações destrutivas testados ou explicitamente pendentes.</li></ul></div><div class="unit "><ul class="md-list">
+
+
+
+
+
+
+
+
+
+<li>[ ] Evidências vinculadas a commit, build, dataset e ambiente corretos.</li></ul></div><div class="unit last-list "><ul class="md-list">
+
+
+
+
+
+
+
+
+
+<li>[ ] Plano de manutenção e regressão pós-release definido.</li></ul></div><div class="unit "><p><strong>Parecer QA:</strong> <code>Aprovado / Aprovado com ressalvas / Reprovado / Não avaliado</code><br>
+<strong>Parecer Engenharia:</strong> <code>Aprovado / Aprovado com ressalvas / Reprovado / Não aplicável / Não avaliado</code><br>
+<strong>Revisor QA:</strong> <code>[nome, data, link]</code><br>
+<strong>Revisor Engenharia:</strong> <code>[nome, data, link/N/A]</code><br>
+<strong>Release autorizado por:</strong> <code>[nome, data, registro formal]</code></p></div><div class="unit "><blockquote>
+<p>Atenção: marcar <strong>Não avaliado</strong> até existir evidência real. A aprovação de release depende das regras internas vigentes e dos responsáveis designados.</p>
+</blockquote></div></div></div>
+    <div class="carimbo"><div><span class="cl">Documento</span><span class="cv">STMA-TEST_PLAN</span></div><div><span class="cl">Referência</span><span class="cv">TI-ENG-001-NOR</span></div><div><span class="cl">Revisão</span><span class="cv">0.1 · Beta</span></div><div><span class="cl">Folha</span><span class="cv">06 / 06</span></div></div></section></div>
+</body></html>
